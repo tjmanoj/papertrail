@@ -8,3 +8,8 @@ __pycache__/
 app/.next/
 app/out/
 .vercel
+
+# Generated data — reproducible byte-for-byte via `python3 data/generate.py`.
+# The answer key is kept (small, and it documents the eval design).
+data/out/*
+!data/out/ground_truth.csv

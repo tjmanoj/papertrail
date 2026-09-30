@@ -1,0 +1,24 @@
+I'll start by reading the relevant files to understand the current state.Let me read the rest of the file and the ground truth.Let me read the generate.py directly from the beginning to identify all non-deterministic sources.Let me read the remaining sections.Let me read the remaining sections more carefully.I've read the full file. Here's my audit of non-deterministic sources:
+
+1. **Line 49: `uuid.uuid4().hex[:12]`** — the primary bug. `uuid4()` uses `os.urandom`, bypassing `random.seed()`. Affects all generated IDs for counterparties, accounts, alerts, cases, screening results, watchlist entries, and transfer references.
+2. **No other sources found.** `random`/`np.random` are properly seeded; no `datetime.now()`, `time()`, `os.urandom`; dict/list iteration is insertion-ordered (Python 3.7+); no unstable sorts.
+
+The fix: replace `uid()` with a counter+hashlib approach (deterministic, collision-free, same shape), add `--verify-determinism` mode, then regenerate.Replacing the `uid()` function and its import.Now replace the `uid()` function itself.Now I need to make the `OUT` directory, seed resets, and `_uid_counter` reset work properly for the `--verify-determinism` mode. The generation needs to be wrapped in a function that can target any output directory. Let me read the bottom of the file to understand the write/summary section, then add the determinism test.
+
+I'll add a `generate(out_dir)` wrapper and the `--verify-determinism` CLI at the bottom. But given the script is a top-level imperative script (not function-wrapped), the cleanest approach is to add a separate verification block at the end that re-runs the script as a subprocess into temp dirs and compares hashes. Let me add that.I need to handle the `--verify-determinism` flag. The approach: intercept the flag early before any generation happens, and if set, run the script twice into temp dirs as a subprocess, then compare. Also need to support `--out-dir` for the subprocess calls.Good. Now let me mark todo 1 done, update todo 2, and regenerate.Regenerating data/out/ from scratch.Regeneration complete. Now let me run the determinism test.Running the determinism self-test (first run).All PASS. Running it a second time.Both runs PASS with identical SHA-256 hashes. Now verify ground truth FK integrity.All done. Summary of changes:
+
+**Bug:** `uid()` on line 49 used `uuid.uuid4().hex[:12]` which draws from `os.urandom`, bypassing the seeded `random`/`np.random` streams. Every run produced different IDs, silently breaking the ground truth answer key.
+
+**Fix in `data/generate.py`:**
+1. Replaced `import uuid` with `import hashlib` (plus `sys`, `tempfile`, `shutil` for the test mode).
+2. Replaced `uid()` with a counter+MD5 approach: `hashlib.md5(f"papertrail-{SEED}-{prefix}-{counter}")`. Same shape (prefix + 12 hex chars), deterministic, collision-free by construction.
+3. No other non-deterministic sources found — `random.seed()`/`np.random.seed()` already covered everything else.
+
+**Determinism self-test:** `python3 data/generate.py --verify-determinism` generates into two temp dirs and compares SHA-256 of every output file. Uses `--out-dir=` internally for subprocess targeting.
+
+**Results:**
+- Determinism test: **12/12 files PASS** (ran twice, identical hashes both times)
+- Ground truth resolution: **0 orphans** across all 6 typologies
+- FK integrity: **0 orphans** across all 9 foreign key relationships
+
+Now let me log this session.All five tasks complete. The data/out/ CSVs are regenerated and ready for Snowflake load in your next session — `sql/` and the RAW schema were not touched.

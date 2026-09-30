@@ -1,0 +1,46 @@
+I'll start by reading the key files to understand the current setup.I need to read the foreign keys section from the data model doc.Good, I have all the context. Let me start the reload.Uploading 11 CSVs to the stage (excluding ground_truth.csv).Now PUT all 11 CSVs. I'll batch them.Some PUTs lost the session context. I'll use fully qualified stage names for the remaining ones.All 11 CSVs uploaded. Now running the TRUNCATE + COPY INTO statements.All 11 tables loaded with zero errors. Now checking stage for ground_truth.csv and counting rows.ground_truth.csv is absent from stage (0 rows returned). All 11 table counts match exactly. Now checking referential integrity.All 11 FK checks: zero orphans. Now checking planted typologies.All 6 typologies: 100% found. Now suspending the warehouse.Reload complete. Three summary tables:
+
+**Row counts (all 11 match)**
+
+| Table | CSV | Snowflake | Match |
+|---|---|---|---|
+| COUNTERPARTY | 809 | 809 | Y |
+| ACCOUNT | 1,497 | 1,497 | Y |
+| TRANSACTION | 240,798 | 240,798 | Y |
+| ALERT | 219 | 219 | Y |
+| ALERT_TRANSACTION | 3,083 | 3,083 | Y |
+| CASE_INVESTIGATION | 93 | 93 | Y |
+| CASE_ALERT | 97 | 97 | Y |
+| WATCHLIST_ENTRY | 82 | 82 | Y |
+| WATCHLIST_SCREENING_RESULT | 1,143 | 1,143 | Y |
+| REGULATORY_DOCUMENT | 6 | 6 | Y |
+| REGULATORY_DOCUMENT_CLAUSE | 18 | 18 | Y |
+
+**Referential integrity (all 11 FKs clean)**
+
+| FK | Orphans |
+|---|---|
+| ACCOUNT.counterparty_id → COUNTERPARTY | 0 |
+| TRANSACTION.account_id → ACCOUNT | 0 |
+| ALERT.counterparty_id → COUNTERPARTY | 0 |
+| ALERT_TRANSACTION.alert_id → ALERT | 0 |
+| ALERT_TRANSACTION.transaction_id → TRANSACTION | 0 |
+| CASE_INVESTIGATION.counterparty_id → COUNTERPARTY | 0 |
+| CASE_ALERT.case_id → CASE_INVESTIGATION | 0 |
+| CASE_ALERT.alert_id → ALERT | 0 |
+| WSR.counterparty_id → COUNTERPARTY | 0 |
+| WSR.watchlist_entry_id → WATCHLIST_ENTRY | 0 |
+| REG_CLAUSE.document_id → REG_DOCUMENT | 0 |
+
+**Planted typologies (all 6 at 100%)**
+
+| Typology | ID types checked | Found/Total |
+|---|---|---|
+| STRUCTURING | cp(4), acct(12), tx(56) | 72/72 |
+| ROUND_TRIPPING | cp(3), acct(3), tx(24) | 30/30 |
+| DORMANT_REACTIVATION | cp(2), acct(2), tx(30) | 34/34 |
+| VELOCITY_SPIKE | cp(3), acct(3), tx(207) | 213/213 |
+| MULE_NETWORK | cp(5), acct(5), tx(10), alert(5) | 25/25 |
+| SANCTIONS_NEAR_MATCH | cp(2), alert(2) | 4/4 |
+
+ground_truth.csv confirmed absent from stage. PAPERTRAIL_WH suspended.<No response>All done. The full RAW reload is complete and verified -- 11 tables loaded, zero errors, zero orphans, all 6 planted typologies intact, warehouse suspended.
