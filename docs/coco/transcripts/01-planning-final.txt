@@ -1,0 +1,14 @@
+I'll start by reading the project's CORTEX.md to ground myself, then produce the two design documents.Let me check the existing foundation SQL and transcript to understand what's already been established.Good — foundation is in place (warehouse, database, four schemas). Now I'll write both design documents. These are substantial, so I'll work through them methodically.Data model document written. Now the architecture document.Now let me log this session.Both documents are written. Here's what they contain:
+
+**`docs/data-model.md`** (594 lines):
+- **11 entities** with full column sets, keys, and relationships — counterparty, account, transaction (with deliberate reversal design), alert, case, two bridge tables, watchlist entry, screening result, regulatory document, and document clause.
+- **7 governed metrics**, each with intended SQL and a concrete table of how ungoverned computation diverges — reversals/pending/date-basis for suspicious volume, entity-resolution/netting for exposure, cohort-vs-snapshot for closure rate, denominator games for SAR rate, threshold-band/lookback ambiguity for structuring score, business-vs-calendar days for resolution time, stale-rating inclusion for high-risk count.
+- **6 regulatory documents** the bank holds, with a clause-to-metric mapping table showing which metric cites which clause and why.
+- **6 planted typologies** — structuring, round-tripping, dormant reactivation, sanctions near-match, velocity spike, mule network — each described at the row level so data generation scripts have an exact spec.
+
+**`docs/architecture.md`** (370 lines):
+- **The path** from analyst question through Cortex Analyst → Cortex Search → AI_COMPLETE → persisted finding, with a handoff table showing what passes between each step.
+- **4 skills** with crisp boundaries: `risk-scanner` (governed query + provenance bundle), `regulation-linker` (clause retrieval via Cortex Search), `finding-writer` (prose assembly from evidence, structurally cannot hallucinate numbers), `provenance-logger` (INSERT-only audit persistence).
+- **Row-level governance** with AU/SG personas, regulatory justification (AUSTRAC Part 8.1, MAS Notice 626 §13), and a table of which entities get row access policies.
+- **Provenance mechanism** — two GOVERNANCE tables (`FINDINGS`, `FINDING_FOOTNOTES`) that resolve any figure to its metric definition, SQL, source row PKs, and regulation clause.
+- **Risks** — Analyst SQL fidelity, provenance capture parsing, small-corpus search relevance, synthetic data believability, RAP-Analyst interaction. **Open questions** on semantic view layer placement, VQR count, finding immutability, and demo persona management.
