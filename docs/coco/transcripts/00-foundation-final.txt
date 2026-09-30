@@ -1,0 +1,27 @@
+I'll set up the PaperTrail foundation. Let me start by gathering account info and running the DDL.Account info collected. Now creating the warehouse, database, and schemas, and testing Cortex AI.Schemas created. Now running the Cortex AI diagnostics — switching to the PAPERTRAIL_WH warehouse first.All Cortex calls succeeded. Now let me write the foundation SQL file and check existing project structure.Done. Here's the summary:
+
+**1. Account details**
+
+| Field | Value |
+|---|---|
+| Account | XD71507 |
+| Region | AWS_AP_SOUTHEAST_7 |
+| Role | ACCOUNTADMIN |
+| User | TJMANOJ |
+| Existing warehouses | COMPUTE_WH (XS), SNOWFLAKE_LEARNING_WH (XS), SYSTEM$STREAMLIT_NOTEBOOK_WH (XS) — all suspended |
+
+**2. PAPERTRAIL_WH** — created (XS, auto-suspend 60s, initially suspended).
+
+**3. Database & schemas** — `PAPERTRAIL.RAW`, `PAPERTRAIL.CURATED`, `PAPERTRAIL.GOLD`, `PAPERTRAIL.GOVERNANCE` all created.
+
+**4. Cortex AI diagnostics**
+
+| Test | Result |
+|---|---|
+| `AI_COMPLETE('claude-sonnet-5', ...)` | Succeeded — returned "OK" |
+| `SNOWFLAKE.CORTEX.COMPLETE('llama3.1-8b', ...)` | Succeeded — returned "OK" |
+| `CORTEX_ENABLED_CROSS_REGION` | Set to `ANY_REGION` (account level) |
+
+Both models work. Cross-region inference is already enabled (`ANY_REGION`), so all Cortex LLM models are usable from this `AP_SOUTHEAST_7` region — no action needed.
+
+**5. DDL written** to `sql/00-foundation.sql` — fully idempotent.
