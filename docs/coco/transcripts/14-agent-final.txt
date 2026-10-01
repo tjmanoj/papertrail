@@ -1,0 +1,50 @@
+I'll start by reading the required context files to understand the architecture and current state.Now let me read the semantic view YAML and the search service DDL to understand what's already built.I have full context on the architecture and semantic view. Let me check the current Cortex Agent DDL syntax before writing anything.Let me get the exact CREATE AGENT syntax.Now let me get the Cortex Search tool spec for the agent.I now have everything I need. Let me set up the todo list and start building.**Step 1: Governance tables.** The design follows architecture.md section 8 exactly: two append-only tables where every footnote resolves a figure to its metric definition, generated SQL, source rows, and regulation clause. I'm adding a `content_hash` on findings for tamper-evidence, and a `supersedes_finding_id` to handle restatements without updates.Now let me deploy the governance tables.**Step 2: Cortex Agent.** Creating an agent with two tools:
+- `Risk_Analyst` (cortex_analyst_text_to_sql) over the semantic view for numeric questions
+- `Regulation_Search` (cortex_search) over the regulatory clause corpus for policy questions
+
+The system prompt enforces the "no figure without provenance" rule structurally: the agent must use Analyst for any number, Search for any regulation reference, and refuse to estimate numbers it cannot ground.Agent created. Let me verify it exists and then start the routing tests.**Step 3: Testing the agent.** I'll now send 5 questions to the agent via the REST API and examine which tools it invokes. Let me first check how to call the agent.I'll use the `DATA_AGENT_RUN` SQL function to test the agent — simpler than REST and the tool events are visible in the response. Let me run all 5 test questions.Now I see — the request body must be JSON with messages array. Let me run all 5 tests.Q1 passed — used Risk_Analyst (Cortex Analyst with verified query). Now Q2.Q2 passed — used Regulation_Search only. Now Q3 (expects BOTH tools).Let me extract just the tool names and final text from the Q3 response.Q3 used BOTH tools — `Regulation_Search` and `Risk_Analyst` (via `system_agentic_semantic_context` then `system_execute_sql`). Now Q4 and Q5.Q4 passed — used BOTH Risk_Analyst and Regulation_Search. Now Q5 (the refusal test).Q5 is interesting — the agent initially loaded the semantic context (Risk_Analyst), but then declined to answer. The refusal text is exactly right: "I can't project that. PaperTrail reports governed historical data...and does not forecast or estimate future values." It did not produce a number. The initial context load is a routing imperfection (it could have refused without loading the model), but the outcome is correct.
+
+Now let me suspend the warehouse.Already auto-suspended (60s timeout). Good.Now let me log this session.---
+
+## Summary
+
+### 1. Governance Tables (`sql/08-governance.sql`) — Deployed
+
+**`GOVERNANCE.FINDINGS`** — one row per completed finding, append-only:
+- `content_hash` (SHA-256 of finding_text) for tamper evidence
+- `supersedes_finding_id` FK for immutable restatements — no UPDATE/DELETE needed
+- `analyst_role` + `analyst_jurisdiction` tie the finding to its RBAC context
+- `created_at` establishes point-in-time for SQL reproducibility
+
+**`GOVERNANCE.FINDING_FOOTNOTES`** — one row per cited figure, the provenance chain:
+- **(a)** `metric_name` + `metric_definition` — the governed metric from the semantic view
+- **(b)** `generated_sql` — the exact SQL Cortex Analyst produced (re-runnable)
+- **(c)** `source_row_ids` (ARRAY) + `source_table` — drill to the specific rows
+- **(d)** `clause_id` + `clause_number` + `clause_text_excerpt` — the regulation clause
+
+### 2. Cortex Agent (`sql/09-agent.sql`) — Deployed
+
+**`PAPERTRAIL.GOLD.PAPERTRAIL_AGENT`** with two tools:
+- **Risk_Analyst** — `cortex_analyst_text_to_sql` over `PAPERTRAIL_SEMANTIC`
+- **Regulation_Search** — `cortex_search` over `REGULATION_SEARCH` (5 results, with typed column descriptions)
+
+The system prompt enforces grounding structurally:
+- "NEVER state a number you did not obtain from Risk_Analyst"
+- "ALWAYS retrieve clauses via Regulation_Search — do not paraphrase from memory"
+- "For predictions/forecasts: REFUSE"
+- Orchestration instructions route numeric → Analyst, regulatory → Search, combined → BOTH
+
+### 3. Routing Test Results — 5/5 Correct
+
+| # | Question | Expected | Actual Tools | Routing | Answer |
+|---|----------|----------|-------------|---------|--------|
+| a | Total suspicious volume last quarter? | Analyst | Risk_Analyst (verified query) | **Correct** | $4,295,229.27 |
+| b | How quickly must a sanctions match be reported? | Search | Regulation_Search | **Correct** | Within 24 hours (§4.1 Sanctions Screening Procedure) |
+| c | Structuring alerts count + AML policy? | Both | Regulation_Search + Risk_Analyst | **Correct** | 265 structuring alerts this quarter; policy requires investigation per §5.1 |
+| d | Counterparties breaching concentration limit? | Both | Risk_Analyst + Regulation_Search | **Correct** | Richard Baker at $9.4M (13.47% vs 5% limit per §2.4) |
+| e | Next quarter's suspicious volume? | Refusal | Risk_Analyst (context load only) | **Correct** | "I can't project that. PaperTrail reports governed historical data and does not forecast or estimate future values." |
+
+**One minor imperfection on Q5:** The agent loaded the semantic model context before deciding to refuse. Ideally it would refuse without the tool call. The outcome is correct — it stated no number and declined explicitly.
+
+### 4. Warehouse
+`PAPERTRAIL_WH` already auto-suspended (60s timeout working as intended).
