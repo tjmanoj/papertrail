@@ -1,4 +1,4 @@
--- 01-raw.sql — RAW-layer DDL for PaperTrail
+-- 01-raw.sql - RAW-layer DDL for PaperTrail
 -- Idempotent: safe to re-run. All CREATE OR REPLACE.
 -- Prerequisite: 00-foundation.sql (creates database, schemas, warehouse).
 
@@ -161,7 +161,7 @@ CREATE OR REPLACE TABLE WATCHLIST_SCREENING_RESULT (
     counterparty_id       VARCHAR       NOT NULL  COMMENT 'FK → COUNTERPARTY',
     watchlist_entry_id    VARCHAR                 COMMENT 'FK → WATCHLIST_ENTRY; NULL if no match',
     screening_date        TIMESTAMP_NTZ NOT NULL  COMMENT 'When screening was performed',
-    match_score           NUMBER(5,2)   NOT NULL  COMMENT '0–100 fuzzy similarity score',
+    match_score           NUMBER(5,2)   NOT NULL  COMMENT '0-100 fuzzy similarity score',
     match_status          VARCHAR       NOT NULL  COMMENT 'CONFIRMED_MATCH | FALSE_POSITIVE | PENDING_REVIEW | NO_MATCH',
     reviewed_by           VARCHAR                 COMMENT 'Analyst who adjudicated',
 
@@ -198,4 +198,4 @@ CREATE OR REPLACE TABLE REGULATORY_DOCUMENT_CLAUSE (
 
     CONSTRAINT pk_clause PRIMARY KEY (clause_id)
 )
-COMMENT = 'Individually addressable section within a regulatory document — the unit of citation';
+COMMENT = 'Individually addressable section within a regulatory document - the unit of citation';

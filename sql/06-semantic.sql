@@ -1,4 +1,4 @@
--- 06-semantic.sql — Deploy the governed semantic view
+-- 06-semantic.sql - Deploy the governed semantic view
 -- Idempotent: CREATE OR REPLACE, safe to re-run.
 --
 -- Source of truth: semantic/papertrail_semantic.sv.yaml

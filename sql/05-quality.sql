@@ -1,10 +1,10 @@
--- 05-quality.sql — Data Metric Functions for PaperTrail
+-- 05-quality.sql - Data Metric Functions for PaperTrail
 -- Idempotent: safe to re-run. Uses ADD ... IF NOT EXISTS pattern where
 -- supported; otherwise wraps in exception-safe blocks.
 -- Prerequisite: 04-gold.sql (GOLD dynamic tables exist and refreshed).
 --
 -- Attaches Snowflake built-in system DMFs to important columns in GOLD.
--- Schedule: TRIGGER_ON_CHANGES — DMFs evaluate after each DT refresh.
+-- Schedule: TRIGGER_ON_CHANGES - DMFs evaluate after each DT refresh.
 
 USE DATABASE PAPERTRAIL;
 USE WAREHOUSE PAPERTRAIL_WH;
@@ -30,7 +30,7 @@ ALTER DYNAMIC TABLE GOLD.FACT_CASE
 
 
 -- ============================================================
--- 2. DIM_COUNTERPARTY — null counts and duplicate key check
+-- 2. DIM_COUNTERPARTY - null counts and duplicate key check
 -- ============================================================
 
 ALTER DYNAMIC TABLE GOLD.DIM_COUNTERPARTY
@@ -51,7 +51,7 @@ ALTER DYNAMIC TABLE GOLD.DIM_COUNTERPARTY
 
 
 -- ============================================================
--- 3. DIM_ACCOUNT — null counts and duplicate key check
+-- 3. DIM_ACCOUNT - null counts and duplicate key check
 -- ============================================================
 
 ALTER DYNAMIC TABLE GOLD.DIM_ACCOUNT
@@ -68,7 +68,7 @@ ALTER DYNAMIC TABLE GOLD.DIM_ACCOUNT
 
 
 -- ============================================================
--- 4. FACT_TRANSACTION — null counts, duplicate key, freshness
+-- 4. FACT_TRANSACTION - null counts, duplicate key, freshness
 -- ============================================================
 
 ALTER DYNAMIC TABLE GOLD.FACT_TRANSACTION
@@ -89,7 +89,7 @@ ALTER DYNAMIC TABLE GOLD.FACT_TRANSACTION
 
 
 -- ============================================================
--- 5. FACT_ALERT — null counts, duplicate key
+-- 5. FACT_ALERT - null counts, duplicate key
 -- ============================================================
 
 ALTER DYNAMIC TABLE GOLD.FACT_ALERT
@@ -106,7 +106,7 @@ ALTER DYNAMIC TABLE GOLD.FACT_ALERT
 
 
 -- ============================================================
--- 6. FACT_CASE — null counts, duplicate key
+-- 6. FACT_CASE - null counts, duplicate key
 -- ============================================================
 
 ALTER DYNAMIC TABLE GOLD.FACT_CASE

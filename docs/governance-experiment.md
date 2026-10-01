@@ -1,11 +1,11 @@
-# Governance Experiment — Governed vs Ungoverned SQL Generation
+# Governance Experiment - Governed vs Ungoverned SQL Generation
 
 ## Hypothesis
 
 We originally hypothesised two things:
 
 1. **Variance hypothesis:** An ungoverned LLM (raw AI_COMPLETE against the base tables)
-   would produce *inconsistent* SQL across repeated runs of the same question — different
+   would produce *inconsistent* SQL across repeated runs of the same question - different
    joins, different filters, different answers each time.
 2. **Correctness hypothesis:** Even when consistent, the ungoverned path would silently
    miss governance decisions encoded in the semantic view, producing *wrong but
@@ -32,7 +32,7 @@ We originally hypothesised two things:
 - Both paths received the same 5 questions, in the same wording.
 - Both paths had access to the same underlying data (the GOLD tables are materialised
   from RAW; no rows are added or removed).
-- The ungoverned path received full DDL for all RAW tables — it was not handicapped.
+- The ungoverned path received full DDL for all RAW tables - it was not handicapped.
 - The governed path received no hints beyond the semantic view definition.
 - Neither path was cherry-picked: all runs are recorded in
   `PAPERTRAIL.GOVERNANCE.GOVERNANCE_EXPERIMENT`.
@@ -51,10 +51,10 @@ We originally hypothesised two things:
 
 - **Ungoverned:** 5 runs per question (25 rows total, path = `UNGOVERNED`).
 - **Governed:** 3 runs per question (15 rows total, path = `GOVERNED`).
-  We reduced to 3 after the ungoverned path showed zero variance — the stability
+  We reduced to 3 after the ungoverned path showed zero variance - the stability
   question was already answered.
 
-## Results — Stability
+## Results - Stability
 
 **Both paths were perfectly stable.** Every run of every question produced
 byte-identical SQL and identical numeric results within its path.
@@ -64,10 +64,10 @@ byte-identical SQL and identical numeric results within its path.
 | UNGOVERNED | 5 | 5 | 1 | 0 |
 | GOVERNED | 5 | 3 | 1 | 0 |
 
-The variance hypothesis — that an ungoverned LLM would produce inconsistent SQL — was
+The variance hypothesis - that an ungoverned LLM would produce inconsistent SQL - was
 **not supported**. The model was deterministic across all runs.
 
-## Results — Correctness
+## Results - Correctness
 
 | Q | Question | Ungoverned | Governed | Abs Diff | Rel Diff | Verdict |
 |---|----------|-----------|----------|----------|----------|---------|
@@ -89,9 +89,9 @@ The *methodology* differs (see SQL diff below), but the result coincides.
 
 ## Per-Question SQL Diffs and Root Causes
 
-### Q1 — Suspicious Transaction Volume Q3 2026
+### Q1 - Suspicious Transaction Volume Q3 2026
 
-**Verdict: DIVERGE — $8,797,923 (ungoverned) vs $4,295,229 (governed), +105%**
+**Verdict: DIVERGE - $8,797,923 (ungoverned) vs $4,295,229 (governed), +105%**
 
 Three governance decisions cause the divergence:
 
@@ -101,7 +101,7 @@ The ungoverned query uses `t.TRANSACTION_DATE BETWEEN '2026-07-01' AND '2026-09-
 The governed query uses `ft.value_date >= '2026-07-01' AND ft.value_date < '2026-10-01'`.
 
 The semantic view specifies: *"VALUE_DATE is the GOVERNED DATE BASIS for transaction
-reporting — all date-filtered metrics on transactions use VALUE_DATE, not booking_date
+reporting - all date-filtered metrics on transactions use VALUE_DATE, not booking_date
 or transaction_timestamp. This prevents cross-period discrepancies from
 booking-vs-settlement timing differences."*
 
@@ -114,7 +114,7 @@ The ungoverned query has no filter for reversals. The governed query requires
 **3. Missing settlement filter**
 
 The ungoverned query includes all transactions. The governed query requires
-`ft.is_settled = TRUE`. The semantic view specifies: *"Only SETTLED transactions —
+`ft.is_settled = TRUE`. The semantic view specifies: *"Only SETTLED transactions  -
 PENDING may never clear and should not inflate the risk signal."*
 
 **4. Alert-linkage scope**
@@ -161,9 +161,9 @@ FROM PAPERTRAIL.GOLD.FACT_TRANSACTION ft
 WHERE ft.value_date >= '2026-07-01' AND ft.value_date < '2026-10-01';
 ```
 
-### Q2 — Exposure to CP-STRUCT-01
+### Q2 - Exposure to CP-STRUCT-01
 
-**Verdict: AGREE — $87,185.10 both paths**
+**Verdict: AGREE - $87,185.10 both paths**
 
 The methodology differs: the ungoverned path sums `AVERAGE_MONTHLY_BALANCE_USD` from
 `RAW.ACCOUNT` (direct exposure), while the governed path reads `RESOLVED_EXPOSURE_USD`
@@ -171,7 +171,7 @@ from `GOLD.DIM_COUNTERPARTY` (entity-resolved exposure including beneficial owne
 via `CURATED.ENTITY_LINK`). The values coincide because CP-STRUCT-01 has no beneficial
 ownership links in the synthetic data.
 
-For a counterparty *with* beneficial ownership links, these would diverge — the
+For a counterparty *with* beneficial ownership links, these would diverge - the
 ungoverned path would understate exposure, potentially missing concentration-limit
 breaches.
 
@@ -188,26 +188,26 @@ FROM PAPERTRAIL.GOLD.DIM_COUNTERPARTY dc
 WHERE dc.counterparty_id = 'CP-STRUCT-01';
 ```
 
-### Q3 — Alert Closure Rate 2026
+### Q3 - Alert Closure Rate 2026
 
-**Verdict: AGREE — 63.64% both paths**
+**Verdict: AGREE - 63.64% both paths**
 
 Both count alerts with CLOSED-prefix statuses and divide by total alerts in 2026. The
 ungoverned path explicitly names `CLOSED_NO_ACTION` and `CLOSED_SAR_FILED`; the governed
 path uses `LIKE 'CLOSED%'`. These return the same rows given the current status enum.
 The ungoverned returns a 0-to-1 ratio; the governed returns a percentage.
 
-### Q4 — SAR Filing Share
+### Q4 - SAR Filing Share
 
-**Verdict: AGREE — 6.45% both paths**
+**Verdict: AGREE - 6.45% both paths**
 
 Both filter `STATUS = 'SAR_FILED'` and divide by total cases. The ungoverned queries
 `RAW.CASE_INVESTIGATION`; the governed queries `GOLD.FACT_CASE`. Same underlying data,
 same logic. Ungoverned returns a ratio, governed returns a percentage.
 
-### Q5 — High-Risk Counterparties in Singapore
+### Q5 - High-Risk Counterparties in Singapore
 
-**Verdict: DIVERGE — 23 (ungoverned) vs 36 (governed), -36%**
+**Verdict: DIVERGE - 23 (ungoverned) vs 36 (governed), -36%**
 
 The root cause is one governance decision:
 
@@ -217,7 +217,7 @@ The ungoverned query filters `RISK_RATING = 'HIGH'` on `RAW.COUNTERPARTY`. The g
 query filters `IS_HIGH_RISK = TRUE` on `GOLD.DIM_COUNTERPARTY`.
 
 The semantic view defines IS_HIGH_RISK as: *"TRUE when risk_rating is HIGH or VERY_HIGH.
-This is the governed flag used by the high_risk_counterparty_count metric — it includes
+This is the governed flag used by the high_risk_counterparty_count metric - it includes
 both HIGH and VERY_HIGH per KYC Refresh Policy section 2.1."*
 
 The ungoverned path misses all `VERY_HIGH`-rated counterparties. There are 13
@@ -254,7 +254,7 @@ with no signal to the reader that anything is wrong.**
   methodology (direct vs entity-resolved exposure) that would diverge for counterparties
   with beneficial ownership links.
 
-The governed path is not valuable because it reduces variance — variance was never the
+The governed path is not valuable because it reduces variance - variance was never the
 problem. It is valuable because it encodes compliance decisions that a general-purpose
 LLM has no way to know: which date field is authoritative, which statuses constitute
 "high risk", whether reversals should be excluded, and how to resolve beneficial

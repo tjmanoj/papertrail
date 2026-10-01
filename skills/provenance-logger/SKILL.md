@@ -1,6 +1,6 @@
 ---
 name: provenance-logger
-description: Persists a completed regulatory finding and its footnotes to the GOVERNANCE schema tables. Append-only — never updates or deletes. Returns the finding_id and content hash for tamper evidence.
+description: Persists a completed regulatory finding and its footnotes to the GOVERNANCE schema tables. Append-only - never updates or deletes. Returns the finding_id and content hash for tamper evidence.
 ---
 
 # Provenance Logger
@@ -23,7 +23,7 @@ for permanent audit record.
 
 ## Procedure
 
-### Step 1 — Generate identifiers
+### Step 1 - Generate identifiers
 
 Generate a UUID for the finding:
 
@@ -33,7 +33,7 @@ SELECT UUID_STRING() AS finding_id;
 
 Generate one UUID per footnote.
 
-### Step 2 — Compute the content hash
+### Step 2 - Compute the content hash
 
 ```sql
 SELECT SHA2('{finding_text}') AS content_hash;
@@ -41,7 +41,7 @@ SELECT SHA2('{finding_text}') AS content_hash;
 
 This is tamper evidence: any modification to the finding text changes the hash.
 
-### Step 3 — INSERT the finding
+### Step 3 - INSERT the finding
 
 ```sql
 INSERT INTO <database>.<schema>.FINDINGS (
@@ -60,7 +60,7 @@ INSERT INTO <database>.<schema>.FINDINGS (
 );
 ```
 
-### Step 4 — INSERT the footnotes
+### Step 4 - INSERT the footnotes
 
 For each footnote in the finding:
 
@@ -86,7 +86,7 @@ INSERT INTO <database>.<schema>.FINDING_FOOTNOTES (
 );
 ```
 
-### Step 5 — Verify persistence
+### Step 5 - Verify persistence
 
 Run a confirmation query:
 
@@ -103,7 +103,7 @@ WHERE f.finding_id = '<finding_id>'
 GROUP BY f.finding_id, f.content_hash, f.created_at;
 ```
 
-### Step 6 — Return
+### Step 6 - Return
 
 ```json
 {
@@ -120,24 +120,24 @@ GROUP BY f.finding_id, f.content_hash, f.created_at;
 
 | Condition | Action |
 |---|---|
-| Missing `finding_text` | Return `{"error": "NO_FINDING_TEXT"}` — nothing to persist |
-| Missing footnotes array | Return `{"error": "NO_FOOTNOTES"}` — a finding without provenance is not loggable |
+| Missing `finding_text` | Return `{"error": "NO_FINDING_TEXT"}` - nothing to persist |
+| Missing footnotes array | Return `{"error": "NO_FOOTNOTES"}` - a finding without provenance is not loggable |
 | INSERT fails (constraint violation) | Return the SQL error. Do NOT retry with a different ID without understanding why. |
-| Verification query returns 0 rows | Return `{"error": "PERSISTENCE_FAILED"}` — the INSERT did not commit |
+| Verification query returns 0 rows | Return `{"error": "PERSISTENCE_FAILED"}` - the INSERT did not commit |
 
 ## What this skill does NOT do
 
 - Does NOT run analytical queries or compute metrics
 - Does NOT call AI_COMPLETE or any LLM
 - Does NOT retrieve regulatory documents
-- Does NOT update or delete existing findings — append-only
-- Does NOT validate the finding content — that is `finding-writer`'s responsibility
+- Does NOT update or delete existing findings - append-only
+- Does NOT validate the finding content - that is `finding-writer`'s responsibility
 - Does NOT generate or modify finding text
 
 ## Append-only policy
 
 This skill enforces append-only semantics:
-- It executes INSERT statements only — never UPDATE or DELETE
+- It executes INSERT statements only - never UPDATE or DELETE
 - If a finding must be corrected, a new finding is created with
   `supersedes_finding_id` pointing to the prior one
 - Both findings persist permanently; the latest is authoritative

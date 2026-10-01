@@ -1,4 +1,4 @@
--- 00-foundation.sql — PaperTrail project foundation
+-- 00-foundation.sql - PaperTrail project foundation
 -- Idempotent: safe to re-run in any account.
 
 -- Warehouse: XS, 60 s auto-suspend, starts suspended
@@ -7,11 +7,11 @@ CREATE WAREHOUSE IF NOT EXISTS PAPERTRAIL_WH
   AUTO_SUSPEND = 60
   AUTO_RESUME  = TRUE
   INITIALLY_SUSPENDED = TRUE
-  COMMENT = 'PaperTrail project — XS warehouse with 60s auto-suspend';
+  COMMENT = 'PaperTrail project - XS warehouse with 60s auto-suspend';
 
 -- Database
 CREATE DATABASE IF NOT EXISTS PAPERTRAIL
-  COMMENT = 'Risk and regulatory intelligence copilot — Provenance team';
+  COMMENT = 'Risk and regulatory intelligence copilot - Provenance team';
 
 -- Schemas
 CREATE SCHEMA IF NOT EXISTS PAPERTRAIL.RAW;

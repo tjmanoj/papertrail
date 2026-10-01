@@ -1,6 +1,6 @@
 ---
 name: regulation-linker
-description: Retrieves governing regulatory clauses from a Cortex Search service given a metric name or risk description. Returns full citation metadata. Pure retrieval — never runs analytical SQL, never computes metrics.
+description: Retrieves governing regulatory clauses from a Cortex Search service given a metric name or risk description. Returns full citation metadata. Pure retrieval - never runs analytical SQL, never computes metrics.
 ---
 
 # Regulation Linker
@@ -23,7 +23,7 @@ The user must provide **at least one** of:
 
 ## Procedure
 
-### Step 1 — Build the search query
+### Step 1 - Build the search query
 
 If the user provides a metric name (e.g. `structuring_indicator_score`),
 expand it into a search-friendly phrase:
@@ -40,7 +40,7 @@ expand it into a search-friendly phrase:
 
 If the user provides free text, use it directly as the search query.
 
-### Step 2 — Query Cortex Search
+### Step 2 - Query Cortex Search
 
 Execute this SQL:
 
@@ -65,7 +65,7 @@ Build the `filter` object from optional parameters:
 - If both: `{'@and': [{'@eq': {'jurisdiction': '...'}}, {'@eq': {'clause_role': '...'}}]}`
 - If neither: omit the `filter` parameter entirely
 
-### Step 3 — Package citation metadata
+### Step 3 - Package citation metadata
 
 For each result row, produce:
 
@@ -83,7 +83,7 @@ For each result row, produce:
 }
 ```
 
-### Step 4 — Return
+### Step 4 - Return
 
 Return the array of citation objects. Do NOT interpret, summarise, or rank
 them beyond Cortex Search's own relevance ordering. The citations ARE the
@@ -108,10 +108,10 @@ output.
 
 ## What this skill does NOT do
 
-- Does NOT run analytical SQL or compute metrics — it only searches the regulatory corpus
+- Does NOT run analytical SQL or compute metrics - it only searches the regulatory corpus
 - Does NOT write to any table
 - Does NOT generate findings or prose
-- Does NOT interpret whether a clause applies — it retrieves candidates by relevance
+- Does NOT interpret whether a clause applies - it retrieves candidates by relevance
 - Does NOT call AI_COMPLETE or any LLM
 - Does NOT modify the search index or underlying data
 

@@ -13,10 +13,10 @@ in a provenance bundle**.
 
 ## How the no-ungrounded-figure guarantee works
 
-Two structural layers enforce this — it is not a best-effort instruction to
+Two structural layers enforce this - it is not a best-effort instruction to
 the LLM:
 
-### Layer 1 — Input containment
+### Layer 1 - Input containment
 
 The AI_COMPLETE prompt is constructed from ONLY:
 - Numbered facts extracted from provenance bundles
@@ -26,7 +26,7 @@ The AI_COMPLETE prompt is constructed from ONLY:
 The model has no database access, no SQL execution, no raw data. Numbers
 can only enter through the bundles.
 
-### Layer 2 — Output validation
+### Layer 2 - Output validation
 
 After AI_COMPLETE returns, three validation checks run:
 
@@ -36,7 +36,7 @@ After AI_COMPLETE returns, three validation checks run:
 | B: Number grounding | Every number in the text appears in a bundle | Reject finding |
 | C: Clause references | At least one clause is cited | Reject finding |
 
-If any check fails, the skill returns an error — never the invalid finding.
+If any check fails, the skill returns an error - never the invalid finding.
 Together, these layers make it structurally impossible for an ungrounded number
 to survive into the output.
 

@@ -2,7 +2,7 @@
 
 The PS1 brief requires CoCo to be used across the full lifecycle, and that
 *"judges will look for evidence of it at every stage."* This directory is that
-evidence. Nothing here is written after the fact — every transcript is CoCo's
+evidence. Nothing here is written after the fact - every transcript is CoCo's
 own record of a real session.
 
 ## Verifying this yourself
@@ -23,7 +23,7 @@ cortex conversations transcript <session-id>
 |---|---|---|
 | 1 · Planning | [01-planning.md](01-planning.md) | `2d46d885` |
 | 2 · Development | [02-development.md](02-development.md) | `dbfd0f33`, `bf873376`, `1c1f3daa`, `22d50ebb`, `c6fc48ed`, `9bc3452c`, `0fe59759` |
-| 3 · Execution | *pending* | — |
+| 3 · Execution | *pending* | - |
 | 4 · Testing & validation | [04-validation.md](04-validation.md) | `f0b21309`, `ce256aab`, `06-audit` |
 
 `prompts/` holds the verbatim prompt given to CoCo for each session, so the
@@ -46,7 +46,7 @@ querying Snowflake, never by reading a transcript.
 That discipline caught two further issues worth recording:
 
 - A generator that declared itself deterministic while minting IDs with
-  `uuid.uuid4()`, which ignores `random.seed()` — silently invalidating the
+  `uuid.uuid4()`, which ignores `random.seed()` - silently invalidating the
   held-out answer key. See [02-development.md](02-development.md).
 - An audit that produced two **false failures** of its own: it looked for data
   metric functions *defined in* `PAPERTRAIL` (the attached ones are

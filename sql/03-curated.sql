@@ -1,17 +1,17 @@
--- 03-curated.sql — CURATED-layer dynamic tables for PaperTrail
+-- 03-curated.sql - CURATED-layer dynamic tables for PaperTrail
 -- Idempotent: CREATE OR REPLACE throughout.
 -- Prerequisite: 01-raw.sql (RAW tables loaded via 02-load.sql).
 --
 -- CURATED resolves messiness in RAW and makes governance choices EXPLICIT
 -- as columns, without filtering anything out. The semantic view (via GOLD)
--- decides which filters to apply — CURATED only exposes the levers.
+-- decides which filters to apply - CURATED only exposes the levers.
 
 USE DATABASE PAPERTRAIL;
 USE SCHEMA CURATED;
 USE WAREHOUSE PAPERTRAIL_WH;
 
 -- ============================================================
--- 1. ENTITY_LINK — beneficial ownership: individual → corporate
+-- 1. ENTITY_LINK - beneficial ownership: individual → corporate
 -- ============================================================
 -- Grain: one row per (individual, corporate) beneficial-ownership link.
 -- Heuristic: an individual whose surname appears in a corporate's legal
@@ -44,13 +44,13 @@ WHERE ind.counterparty_type = 'INDIVIDUAL'
 
 
 -- ============================================================
--- 2. TRANSACTION_CLASSIFIED — governance-explicit transaction view
+-- 2. TRANSACTION_CLASSIFIED - governance-explicit transaction view
 -- ============================================================
 -- Grain: one row per transaction (same as RAW.TRANSACTION).
 -- Adds explicit boolean columns for every governance choice the data
 -- model identified as a divergence source: settled vs pending, reversal
 -- vs not, booking date vs value date, direction, cash flag, structuring
--- band, cross-border. Nothing is filtered — the semantic layer decides.
+-- band, cross-border. Nothing is filtered - the semantic layer decides.
 
 CREATE OR REPLACE DYNAMIC TABLE TRANSACTION_CLASSIFIED
   TARGET_LAG = '1 hour'
@@ -95,7 +95,7 @@ SELECT
     -- Cash flag for structuring detection
     (t.transaction_type IN ('CASH_DEPOSIT', 'CASH_WITHDRAWAL')) AS is_cash,
 
-    -- Structuring band: cash deposits in $8,000–$9,999 (just below $10K threshold)
+    -- Structuring band: cash deposits in $8,000-$9,999 (just below $10K threshold)
     (t.transaction_type = 'CASH_DEPOSIT'
      AND t.amount_usd BETWEEN 8000 AND 9999) AS is_structuring_band,
 
@@ -134,7 +134,7 @@ LEFT JOIN (
 
 
 -- ============================================================
--- 3. ALERT_ENRICHED — alert view with transaction and case context
+-- 3. ALERT_ENRICHED - alert view with transaction and case context
 -- ============================================================
 -- Grain: one row per alert (same as RAW.ALERT).
 -- Enriched with linked-transaction stats, counterparty context,
@@ -204,7 +204,7 @@ LEFT JOIN PAPERTRAIL.RAW.CASE_INVESTIGATION ci
 
 
 -- ============================================================
--- 4. ACCOUNT_ENRICHED — account view with counterparty context
+-- 4. ACCOUNT_ENRICHED - account view with counterparty context
 -- ============================================================
 -- Grain: one row per account (same as RAW.ACCOUNT).
 -- Enriched with counterparty attributes and explicit status flags.

@@ -189,7 +189,7 @@ page = st.sidebar.radio("", ["Ask", "Prove", "File", "Evidence"],
 
 
 # ===================================================================
-# PAGE 1 — Ask
+# PAGE 1 - Ask
 # ===================================================================
 if page == "Ask":
     try:
@@ -274,7 +274,7 @@ if page == "Ask":
 
 
 # ===================================================================
-# PAGE 2 — Prove
+# PAGE 2 - Prove
 # ===================================================================
 elif page == "Prove":
     try:
@@ -404,7 +404,7 @@ elif page == "Prove":
 
 
 # ===================================================================
-# PAGE 3 — File
+# PAGE 3 - File
 # ===================================================================
 elif page == "File":
     try:
@@ -423,7 +423,7 @@ elif page == "File":
             st.info("No findings have been filed yet.")
         else:
             options = {
-                f"{safe_get(f, 'FINDING_ID', '?')} — {str(safe_get(f, 'CREATED_AT', ''))[:19]}": f
+                f"{safe_get(f, 'FINDING_ID', '?')} - {str(safe_get(f, 'CREATED_AT', ''))[:19]}": f
                 for f in findings
             }
             selected_label = st.selectbox("Select a finding", list(options.keys()))
@@ -520,7 +520,7 @@ elif page == "File":
 
 
 # ===================================================================
-# PAGE 4 — Evidence
+# PAGE 4 - Evidence
 # ===================================================================
 elif page == "Evidence":
     try:

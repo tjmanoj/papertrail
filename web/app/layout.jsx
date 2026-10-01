@@ -1,7 +1,7 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'PaperTrail — audit-ready risk & regulatory copilot',
+  title: 'PaperTrail - audit-ready risk & regulatory copilot',
   description:
     'Every figure resolves to its governed metric, the exact SQL, the source rows and the clause that makes it matter. Built on Snowflake for the CoCo CLI Hackathon.',
 };

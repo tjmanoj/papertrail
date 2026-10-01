@@ -1,11 +1,11 @@
--- 02-load.sql — Load generated CSVs into PAPERTRAIL.RAW
+-- 02-load.sql - Load generated CSVs into PAPERTRAIL.RAW
 -- Idempotent: TRUNCATE + COPY ensures repeatable full reload.
 -- Prerequisite: 01-raw.sql (creates tables), stage with uploaded CSVs.
 --
 -- Before running:
 --   1. Upload CSVs to stage:
 --      PUT 'file:///.../data/out/<table>.csv' @PAPERTRAIL.RAW.PAPERTRAIL_LOAD/<table>/ AUTO_COMPRESS=TRUE OVERWRITE=TRUE
---   2. Do NOT upload ground_truth.csv — it is the held-out answer key.
+--   2. Do NOT upload ground_truth.csv - it is the held-out answer key.
 
 USE DATABASE PAPERTRAIL;
 USE SCHEMA RAW;

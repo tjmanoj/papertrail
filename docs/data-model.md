@@ -1,4 +1,4 @@
-# PaperTrail — Data Model Design
+# PaperTrail - Data Model Design
 
 > Design-only document. No objects created. Written before any DDL beyond
 > foundation schemas so a judge can see the thinking that preceded the build.
@@ -23,7 +23,7 @@
 ### 1.1 COUNTERPARTY
 
 **Business meaning:** Any legal person or entity the bank has a relationship with
-— individual retail customers, corporate clients, correspondent banks,
+ -  individual retail customers, corporate clients, correspondent banks,
 beneficial owners. One row per counterparty.
 
 | Column | Type | Description |
@@ -52,7 +52,7 @@ beneficial owners. One row per counterparty.
 
 ### 1.2 ACCOUNT
 
-**Business meaning:** A product-holding unit — a savings account, term deposit,
+**Business meaning:** A product-holding unit - a savings account, term deposit,
 loan facility, or correspondent nostro/vostro. One row per account.
 
 | Column | Type | Description |
@@ -76,7 +76,7 @@ loan facility, or correspondent nostro/vostro. One row per account.
 
 ### 1.3 TRANSACTION
 
-**Business meaning:** A single monetary movement — a credit or debit on an
+**Business meaning:** A single monetary movement - a credit or debit on an
 account. Wire transfers appear as two rows (debit on sender, credit on
 receiver) linked by `transfer_reference`.
 
@@ -104,14 +104,14 @@ receiver) linked by `transfer_reference`.
 **Relationships:** Child of ACCOUNT. Referenced by ALERT (via alert triggers).
 
 **Design note on reversals:** Reversals are separate rows with `is_reversal =
-TRUE`, not updates. This is deliberate — netting out reversals vs. counting
+TRUE`, not updates. This is deliberate - netting out reversals vs. counting
 gross is one of the most common sources of divergence (see Governed Metrics).
 
 ---
 
 ### 1.4 ALERT
 
-**Business meaning:** An automated detection signal from a monitoring rule — a
+**Business meaning:** An automated detection signal from a monitoring rule - a
 threshold breach, pattern match, or model score. One alert can involve multiple
 transactions.
 
@@ -220,7 +220,7 @@ positives (match dismissed).
 | `counterparty_id` | VARCHAR FK | |
 | `watchlist_entry_id` | VARCHAR FK | NULL if no match |
 | `screening_date` | TIMESTAMP_NTZ | |
-| `match_score` | NUMBER(5,2) | 0–100 fuzzy similarity |
+| `match_score` | NUMBER(5,2) | 0-100 fuzzy similarity |
 | `match_status` | VARCHAR | `CONFIRMED_MATCH`, `FALSE_POSITIVE`, `PENDING_REVIEW`, `NO_MATCH` |
 | `reviewed_by` | VARCHAR | Analyst who adjudicated |
 
@@ -250,7 +250,7 @@ stored as unstructured text for Cortex Search to index.
 ### 1.11 REGULATORY_DOCUMENT_CLAUSE
 
 **Business meaning:** An individually addressable section within a regulatory
-document — the unit of citation in a finding.
+document - the unit of citation in a finding.
 
 | Column | Type | Description |
 |---|---|---|
@@ -287,7 +287,7 @@ REGULATORY_DOCUMENT ──1:N── REGULATORY_DOCUMENT_CLAUSE
 ## 2. Governed Metrics
 
 Each metric below includes the **business definition**, the **intended SQL
-semantics**, and — critically — the **specific ways ungoverned computation
+semantics**, and - critically - the **specific ways ungoverned computation
 diverges**. This section is the core argument for why a semantic view matters.
 
 ---
@@ -334,7 +334,7 @@ WHERE ac.status = 'ACTIVE'
 | Divergence | What happens | Impact |
 |---|---|---|
 | **Dormant accounts included** | One analyst includes dormant accounts (status = `DORMANT`) because the money is still there. Another excludes them per policy. | Concentration risk reports differ by millions. |
-| **Entity resolution** | Counterparty has a personal account and is a beneficial owner of a corporate. Analyst A sums only direct accounts. Analyst B manually resolves and includes the corporate. | Same counterparty, different exposure — potentially breaching large-exposure limits without knowing. |
+| **Entity resolution** | Counterparty has a personal account and is a beneficial owner of a corporate. Analyst A sums only direct accounts. Analyst B manually resolves and includes the corporate. | Same counterparty, different exposure - potentially breaching large-exposure limits without knowing. |
 | **Loan vs deposit netting** | Analyst A nets loans against deposits (net exposure). Analyst B reports gross across all product types. | Regulatory capital calculation is wrong if method isn't consistent. |
 | **Currency conversion date** | If multi-currency existed, the FX rate date (trade date, report date, month-end fix) changes the number. We use USD throughout, but the metric definition must still specify "no FX conversion applied" to prevent a future analyst from adding one ad hoc. |
 
@@ -386,7 +386,7 @@ WHERE opened_date BETWEEN :start AND :end
 
 ### 2.5 `structuring_indicator_score`
 
-**Business definition:** A rule-based composite score (0–100) measuring how
+**Business definition:** A rule-based composite score (0-100) measuring how
 closely a counterparty's recent cash transaction pattern matches known
 structuring typologies (multiple deposits just below reporting threshold).
 
@@ -394,7 +394,7 @@ structuring typologies (multiple deposits just below reporting threshold).
 ```sql
 -- Counts cash deposits in trailing 30 days that are between
 -- $8,000 and $9,999 (just below $10K reporting threshold)
--- and divides by total cash deposits to get a ratio, then scales 0–100.
+-- and divides by total cash deposits to get a ratio, then scales 0-100.
 ROUND(
   COUNT(CASE WHEN transaction_type = 'CASH_DEPOSIT'
               AND amount_usd BETWEEN 8000 AND 9999 THEN 1 END)
@@ -408,7 +408,7 @@ ROUND(
 
 | Divergence | What happens | Impact |
 |---|---|---|
-| **Threshold band** | One analyst uses 8,000–9,999. Another uses 9,000–9,999 (tighter band). A third uses 5,000–9,999 (broad). All defensible; all give different scores. | No consistent alert calibration; model validation is impossible. |
+| **Threshold band** | One analyst uses 8,000-9,999. Another uses 9,000-9,999 (tighter band). A third uses 5,000-9,999 (broad). All defensible; all give different scores. | No consistent alert calibration; model validation is impossible. |
 | **Lookback window** | 30 days vs 7 days vs calendar month. Structuring patterns across month-end boundaries are missed or double-counted. | Seasonal smurfing activity falls through the cracks. |
 | **Cash-equivalent inclusion** | Does a money order purchased at a branch count as a cash deposit? Different analysts decide differently. Our model restricts to `CASH_DEPOSIT` explicitly. | Typology detection coverage varies by analyst interpretation. |
 
@@ -469,19 +469,19 @@ WHERE risk_rating IN ('HIGH', 'VERY_HIGH')
 
 ### Clause-to-metric mapping
 
-This is what makes PaperTrail's provenance chain complete — a metric in a
+This is what makes PaperTrail's provenance chain complete - a metric in a
 finding doesn't just cite its SQL, it cites *why* that metric matters
 regulatorily.
 
 | Metric | Cites clause from | Regulatory reason |
 |---|---|---|
-| `total_suspicious_transaction_volume_usd` | STR Filing Guidance §3.1 — Filing thresholds | Volume determines whether threshold reporting is triggered |
-| `counterparty_exposure_usd` | Risk Appetite Statement §2.4 — Concentration limits | Exposure above limit requires board notification |
-| `alert_closure_rate` | AML/CTF Policy §7.3 — Monitoring effectiveness | Rate below target triggers enhanced monitoring review |
-| `sar_filing_rate` | STR Filing Guidance §4.1 — Filing rate expectations | Abnormally low rate is a regulatory red flag (defensive filing) |
-| `structuring_indicator_score` | AML/CTF Policy §5.2 — Structuring detection | Threshold avoidance is a prescribed typology under AUSTRAC |
-| `days_to_case_resolution` | AML/CTF Policy §7.5 — Investigation timeliness | Cases open > 90 days require MLRO escalation |
-| `high_risk_counterparty_count` | KYC Refresh Policy §2.1 — Risk-based refresh | Count drives resource planning for annual KYC reviews |
+| `total_suspicious_transaction_volume_usd` | STR Filing Guidance §3.1 - Filing thresholds | Volume determines whether threshold reporting is triggered |
+| `counterparty_exposure_usd` | Risk Appetite Statement §2.4 - Concentration limits | Exposure above limit requires board notification |
+| `alert_closure_rate` | AML/CTF Policy §7.3 - Monitoring effectiveness | Rate below target triggers enhanced monitoring review |
+| `sar_filing_rate` | STR Filing Guidance §4.1 - Filing rate expectations | Abnormally low rate is a regulatory red flag (defensive filing) |
+| `structuring_indicator_score` | AML/CTF Policy §5.2 - Structuring detection | Threshold avoidance is a prescribed typology under AUSTRAC |
+| `days_to_case_resolution` | AML/CTF Policy §7.5 - Investigation timeliness | Cases open > 90 days require MLRO escalation |
+| `high_risk_counterparty_count` | KYC Refresh Policy §2.1 - Risk-based refresh | Count drives resource planning for annual KYC reviews |
 
 ---
 
@@ -497,10 +497,10 @@ describes exactly how it manifests at the row level.
 reporting threshold.
 
 **Row-level manifestation:**
-- 3–5 counterparties will have clusters of `CASH_DEPOSIT` transactions with
-  amounts in the $8,000–$9,950 range.
-- Deposits occur across 2–3 different accounts owned by the same counterparty.
-- Frequency: 3–6 deposits within any rolling 7-day window.
+- 3-5 counterparties will have clusters of `CASH_DEPOSIT` transactions with
+  amounts in the $8,000-$9,950 range.
+- Deposits occur across 2-3 different accounts owned by the same counterparty.
+- Frequency: 3-6 deposits within any rolling 7-day window.
 - At least one "slip-up" deposit of exactly $9,999 to make the pattern obvious.
 - Normal counterparties have occasional cash deposits but with amounts that are
   uniformly distributed and not clustered near the threshold.
@@ -513,12 +513,12 @@ of legitimate business activity.
 
 **Row-level manifestation:**
 - A counterparty sends a `WIRE_OUT` to a beneficiary in a different country.
-- Within 5–10 days, a `WIRE_IN` of a similar amount (within 2%) arrives from
+- Within 5-10 days, a `WIRE_IN` of a similar amount (within 2%) arrives from
   the same or related originator country.
 - The `originator_name` on the return wire is a different legal entity but
   shares a word with the counterparty name (e.g., "Apex Holdings" sends,
   "Apex Trading Ltd" returns).
-- 2–3 counterparties will exhibit this pattern with 3+ round-trip cycles.
+- 2-3 counterparties will exhibit this pattern with 3+ round-trip cycles.
 
 ### 4.3 Dormant Account Reactivation
 
@@ -530,19 +530,19 @@ significant transaction volume, suggesting it is being used as a pass-through.
 - A sudden burst of 10+ transactions within a 2-week window, totalling over
   $50,000.
 - Account status flips from `DORMANT` to `ACTIVE` immediately before the burst.
-- Transactions are a mix of `WIRE_IN` and `WIRE_OUT` — money passes through
+- Transactions are a mix of `WIRE_IN` and `WIRE_OUT` - money passes through
   rather than accumulating.
 
 ### 4.4 Sanctions Near-Match
 
 **Typology:** A counterparty's name is suspiciously similar to a sanctioned
-entity but not identical — potential evasion through spelling variation.
+entity but not identical - potential evasion through spelling variation.
 
 **Row-level manifestation:**
 - 2 watchlist entries will have names that differ from existing counterparties
   by minor variations: transposed letters, missing diacritics, abbreviated
   first name.
-- `match_score` in WATCHLIST_SCREENING_RESULT for these will be 75–89 (below
+- `match_score` in WATCHLIST_SCREENING_RESULT for these will be 75-89 (below
   the typical auto-confirm threshold of 90 but above the auto-dismiss
   threshold of 60).
 - One will be a genuine false positive (different person). One will be a true
@@ -555,28 +555,28 @@ their historical norm by a large multiple, suggesting their account may be
 compromised or used for layering.
 
 **Row-level manifestation:**
-- 3 counterparties will have a stable baseline of 5–10 transactions per month
+- 3 counterparties will have a stable baseline of 5-10 transactions per month
   for 6+ months.
-- In one specific month, they will have 40–80 transactions — a 5x–10x spike.
+- In one specific month, they will have 40-80 transactions - a 5x-10x spike.
 - The spike transactions will be predominantly `WIRE_IN` followed by `WIRE_OUT`
-  within 24–48 hours (layering pattern).
+  within 24-48 hours (layering pattern).
 - Amounts will be varied (not round numbers) to avoid simple threshold rules.
 
 ### 4.6 Mule Network
 
 **Typology:** A set of seemingly unrelated counterparties who all receive funds
-from the same originator and rapidly forward them to a common beneficiary —
+from the same originator and rapidly forward them to a common beneficiary  -
 a classic money mule structure.
 
 **Row-level manifestation:**
-- 4–5 counterparties who have no overt relationship (different names, addresses,
+- 4-5 counterparties who have no overt relationship (different names, addresses,
   onboarding dates).
 - All receive `WIRE_IN` from the same `originator_name` within a 3-day window.
 - All send `WIRE_OUT` to the same `beneficiary_name` within 48 hours of receipt.
 - The amounts fan out from originator (one large sum) and consolidate to
   beneficiary (many smaller sums minus a ~5% "commission" retained by each mule).
 - These counterparties are all `INDIVIDUAL` type, onboarded within the last 6
-  months, and rated `LOW` risk — the mules were not flagged at onboarding.
+  months, and rated `LOW` risk - the mules were not flagged at onboarding.
 
 ### Signal density
 
@@ -589,5 +589,5 @@ months. Of these:
   withdrawals. Normal distribution of amounts with realistic daily/weekly
   patterns.
 
-This density means the signal is findable but not trivially obvious — a
+This density means the signal is findable but not trivially obvious - a
 compliance analyst needs the system to surface it, which is the point.

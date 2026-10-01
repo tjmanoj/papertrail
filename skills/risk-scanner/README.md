@@ -7,8 +7,8 @@ every source row.
 
 ## Why
 
-Querying a metric is easy. *Defending* the number — proving what SQL produced
-it, which rows fed it, and what it means — is the hard part. This skill
+Querying a metric is easy. *Defending* the number - proving what SQL produced
+it, which rows fed it, and what it means - is the hard part. This skill
 captures all four in one atomic operation so downstream consumers (humans,
 auditors, or the `finding-writer` skill) can cite the figure with full
 traceability.
@@ -19,15 +19,15 @@ traceability.
 
 | Parameter | Required | Default | Description |
 |---|---|---|---|
-| `question` | yes* | — | Natural-language metric question |
-| `metric` | yes* | — | Explicit metric name (alternative to `question`) |
+| `question` | yes* | - | Natural-language metric question |
+| `metric` | yes* | - | Explicit metric name (alternative to `question`) |
 | `semantic_view` | no | `PAPERTRAIL.GOLD.PAPERTRAIL_SEMANTIC` | Semantic view FQN |
 | `warehouse` | no | `PAPERTRAIL_WH` | Warehouse name |
-| `filters` | no | — | Jurisdiction, date range, counterparty ID |
+| `filters` | no | - | Jurisdiction, date range, counterparty ID |
 
 \* Provide `question` or `metric`; at least one is required.
 
-### Output — Provenance Bundle
+### Output - Provenance Bundle
 
 ```json
 {

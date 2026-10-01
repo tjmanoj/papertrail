@@ -1,4 +1,4 @@
-# PaperTrail — Architecture Design
+# PaperTrail - Architecture Design
 
 > Design-only document. No objects created. Written before any DDL beyond
 > foundation schemas so a judge can see the thinking that preceded the build.
@@ -8,7 +8,7 @@
 ## 5. The Path: Signal → Evidence → Documented Finding
 
 The system converts a raw risk signal in transaction data into an audit-ready
-regulatory finding. Every step uses a native Snowflake feature — no external
+regulatory finding. Every step uses a native Snowflake feature - no external
 orchestration, no third-party LLM APIs.
 
 ### Step-by-step flow
@@ -67,10 +67,10 @@ orchestration, no third-party LLM APIs.
 | Feature | Role in PaperTrail |
 |---|---|
 | **Semantic View** | Single governed definition of every metric. Cortex Analyst can only generate SQL through the semantic view, so there is no path to ungoverned computation. The semantic view YAML includes verified queries (VQRs) that encode the "blessed" way to compute each metric. |
-| **Cortex Analyst** | Translates natural language to SQL via the semantic view. Returns the SQL it generated — this SQL becomes the provenance evidence for every figure. |
+| **Cortex Analyst** | Translates natural language to SQL via the semantic view. Returns the SQL it generated - this SQL becomes the provenance evidence for every figure. |
 | **Cortex Search** | Indexes regulatory documents (REGULATORY_DOCUMENT_CLAUSE table). When a finding references a metric, the system retrieves the relevant regulatory clause that justifies why that metric matters. |
-| **AI_COMPLETE** | Assembles the final finding. Input is structured (metric results + clause citations). Output is prose with footnotes. The LLM does not compute any numbers — it formats them. Numbers come only from governed SQL. |
-| **Row Access Policy** | Controls which rows each analyst persona can see based on jurisdiction. An AU analyst and an SG analyst asking the same question get different result sets — correctly and traceably. |
+| **AI_COMPLETE** | Assembles the final finding. Input is structured (metric results + clause citations). Output is prose with footnotes. The LLM does not compute any numbers - it formats them. Numbers come only from governed SQL. |
+| **Row Access Policy** | Controls which rows each analyst persona can see based on jurisdiction. An AU analyst and an SG analyst asking the same question get different result sets - correctly and traceably. |
 
 ---
 
@@ -146,7 +146,7 @@ clause_citation}], generated_at: timestamp}`
 
 **Boundary:** This skill never runs SQL against the database. It never
 retrieves regulatory documents. It only formats what it is given. The
-"no figure without provenance" constraint is enforced here — structurally,
+"no figure without provenance" constraint is enforced here - structurally,
 by only providing governed numbers as input.
 
 ---
@@ -195,7 +195,7 @@ analytical queries, never calls LLMs, never retrieves documents.
 `finding-writer` requires both outputs. `provenance-logger` runs last.
 
 A CoCo session orchestrates this as a sequential tool chain. No external
-orchestrator is needed — the skills are invoked in conversation order.
+orchestrator is needed - the skills are invoked in conversation order.
 
 ---
 
@@ -223,7 +223,7 @@ More concretely:
   only to Singapore-based compliance staff unless a formal data-sharing
   arrangement is documented.
 
-This means the same query — "show me high-risk counterparties" — legitimately
+This means the same query - "show me high-risk counterparties" - legitimately
 returns different rows for different analysts, and both answers are correct for
 their jurisdiction.
 
@@ -243,7 +243,7 @@ their jurisdiction.
 A transaction where `originator_country = 'AU'` and `beneficiary_country = 'SG'`
 is booked by the initiating branch (`reporting_entity_jurisdiction = 'AU'`).
 The SG analyst sees the receiving leg on the SG account but not the sending
-alert on the AU side. This is the correct regulatory behaviour — the SG analyst
+alert on the AU side. This is the correct regulatory behaviour - the SG analyst
 works the SG side independently.
 
 **Assumption:** A `GLOBAL_MLRO` role exists that sees all jurisdictions for
@@ -306,7 +306,7 @@ Two tables in `GOVERNANCE` schema:
   and verify the number. If the underlying data has changed (new transactions
   posted), the timestamp on the finding establishes the point-in-time context.
 - **Traceability:** `source_row_ids` means an auditor can drill to the exact
-  rows — not "these are the kinds of transactions" but "these specific
+  rows - not "these are the kinds of transactions" but "these specific
   transaction_ids."
 - **Regulatory justification:** `clause_id` resolves to the specific paragraph
   of policy that says this metric matters. An examiner doesn't have to take
@@ -331,11 +331,11 @@ Two tables in `GOVERNANCE` schema:
 
 | Risk | Why | Mitigation |
 |---|---|---|
-| **Cortex Analyst SQL fidelity** | Cortex Analyst may generate SQL that doesn't exactly match the semantic view's intended semantics — e.g., it might apply filters in the wrong order or miss the reversal exclusion. Verified queries help but may not cover every question shape. | Write verified queries (VQRs) for the 7 governed metrics. Evaluation suite tests that the Analyst produces correct SQL for at least 20 natural-language variations. If the Analyst deviates, the VQR should redirect it. |
+| **Cortex Analyst SQL fidelity** | Cortex Analyst may generate SQL that doesn't exactly match the semantic view's intended semantics - e.g., it might apply filters in the wrong order or miss the reversal exclusion. Verified queries help but may not cover every question shape. | Write verified queries (VQRs) for the 7 governed metrics. Evaluation suite tests that the Analyst produces correct SQL for at least 20 natural-language variations. If the Analyst deviates, the VQR should redirect it. |
 | **Provenance capture from Analyst** | Cortex Analyst returns SQL, but capturing it programmatically (not just displaying it) for storage in the provenance table requires parsing the Analyst response. If the Analyst response format changes or the SQL is embedded in markdown, extraction may break. | Build a rigid extraction function that expects SQL in a code block. Test it against 20+ Analyst responses in the eval suite. Fall back to "unable to extract provenance" rather than guessing. |
 | **Cortex Search relevance for clause retrieval** | Regulatory documents are dense and use overlapping terminology. A query about "structuring" might retrieve clauses about "account structure" instead of "transaction structuring." | Use clause-level chunking (not full documents) to keep chunks focused. Include the clause title and section number in the indexed text to give the search model more context. Test retrieval precision in evals. |
 | **Synthetic data believability** | Generating 50K transactions that look like a real bank's activity while also embedding detectable signal is non-trivial. Random data won't have realistic daily/weekly patterns, amount distributions, or counterparty behaviour. | Use a Python generation script with explicit distributions: log-normal for amounts, weekday-weighted for dates, Poisson for transaction counts. Embed typologies as explicit code paths, not random perturbations. |
-| **Row access policy + Cortex Analyst interaction** | Row access policies filter at query time. If the semantic view is queried by an AU analyst, the results are correct for AU. But the Cortex Analyst doesn't know it's being filtered — it might say "total across all counterparties" when it means "total across AU counterparties." | The semantic view should include `jurisdiction` as a required filter dimension. The Analyst prompt (system instruction in the semantic view YAML) should state that results are jurisdiction-scoped. |
+| **Row access policy + Cortex Analyst interaction** | Row access policies filter at query time. If the semantic view is queried by an AU analyst, the results are correct for AU. But the Cortex Analyst doesn't know it's being filtered - it might say "total across all counterparties" when it means "total across AU counterparties." | The semantic view should include `jurisdiction` as a required filter dimension. The Analyst prompt (system instruction in the semantic view YAML) should state that results are jurisdiction-scoped. |
 
 ### Might not work in three days
 
@@ -354,7 +354,7 @@ Two tables in `GOVERNANCE` schema:
    semantic view → GOLD views → CURATED tables → RAW tables.
 
 2. **How many verified queries?** At minimum one per governed metric (7).
-   Ideally 2–3 per metric covering different filter combinations. Budget 15–20
+   Ideally 2-3 per metric covering different filter combinations. Budget 15-20
    VQRs total. More is better for Analyst accuracy but each takes time to write
    and test.
 

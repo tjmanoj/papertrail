@@ -82,7 +82,7 @@ const q2 = (sqlText, binds) => new Promise((res, rej) =>
   fs.writeFileSync(path.join(__dirname, '..', 'data', 'snapshot.json'),
                    JSON.stringify(out, null, 2));
   const n = (k) => Array.isArray(out[k]) ? out[k].length : 0;
-  console.log(`snapshot written — experiment:${n('experiment')} findings:${n('findings')} footnotes:${n('footnotes')} dynTables:${n('dynamicTables')}`);
+  console.log(`snapshot written - experiment:${n('experiment')} findings:${n('findings')} footnotes:${n('footnotes')} dynTables:${n('dynamicTables')}`);
   console.log('counts:', JSON.stringify(out.counts && out.counts[0]));
   conn.destroy(() => process.exit(0));
 })().catch((e) => { console.error('FAILED:', e.message); process.exit(1); });

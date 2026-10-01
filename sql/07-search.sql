@@ -1,4 +1,4 @@
--- 07-search.sql — Cortex Search over the regulatory clause corpus
+-- 07-search.sql - Cortex Search over the regulatory clause corpus
 -- Idempotent: CREATE OR REPLACE / IF NOT EXISTS throughout.
 -- Prerequisite: 01-raw.sql (creates regulatory tables), 02-load.sql (loads data).
 
@@ -32,7 +32,7 @@ CREATE OR REPLACE TABLE REGULATORY_DOCUMENT_PARSED (
 
     CONSTRAINT pk_reg_doc_parsed PRIMARY KEY (document_id)
 )
-COMMENT = 'AI_PARSE_DOCUMENT output for regulatory PDFs — proves we can ingest PDFs we are handed';
+COMMENT = 'AI_PARSE_DOCUMENT output for regulatory PDFs - proves we can ingest PDFs we are handed';
 
 -- Populate from staged PDFs (re-runnable: table is replaced above)
 INSERT INTO REGULATORY_DOCUMENT_PARSED
@@ -56,7 +56,7 @@ SELECT
 FROM raw_parsed;
 
 -- ============================================================
--- 3. Cortex Search Service — clause-level retrieval
+-- 3. Cortex Search Service - clause-level retrieval
 -- ============================================================
 -- The search column is an enriched composite of document title, clause title,
 -- clause number, document type, and clause text.  This lets the embedding model
@@ -76,13 +76,13 @@ CREATE OR REPLACE CORTEX SEARCH SERVICE REGULATION_SEARCH
   WAREHOUSE = PAPERTRAIL_WH
   TARGET_LAG = '1 day'
   EMBEDDING_MODEL = 'snowflake-arctic-embed-l-v2.0'
-  COMMENT = 'Hybrid search over regulatory clauses — powers the provenance copilot'
+  COMMENT = 'Hybrid search over regulatory clauses - powers the provenance copilot'
 AS (
     SELECT
         c.clause_id,
 
         -- Enriched search column: topical context + full clause body
-        d.title || ' — ' || c.clause_title
+        d.title || ' - ' || c.clause_title
             || ' (§' || c.clause_number || ', ' || d.document_type || '): '
             || c.clause_text
             AS search_text,
@@ -95,7 +95,7 @@ AS (
         c.clause_title,
         d.jurisdiction,
 
-        -- Derived clause role — general heuristic, NOT fitted to eval queries.
+        -- Derived clause role - general heuristic, NOT fitted to eval queries.
         -- Priority order: REFERENCES first (record-keeping / cross-ref clauses),
         -- then DEFINES (clauses that establish rules), else OPERATIONALISES.
         CASE

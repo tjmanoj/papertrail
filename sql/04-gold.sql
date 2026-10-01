@@ -1,4 +1,4 @@
--- 04-gold.sql — GOLD-layer dynamic tables for PaperTrail
+-- 04-gold.sql - GOLD-layer dynamic tables for PaperTrail
 -- Idempotent: CREATE OR REPLACE throughout.
 -- Prerequisite: 03-curated.sql (CURATED dynamic tables).
 --
@@ -12,7 +12,7 @@ USE SCHEMA GOLD;
 USE WAREHOUSE PAPERTRAIL_WH;
 
 -- ============================================================
--- 1. DIM_COUNTERPARTY — counterparty dimension
+-- 1. DIM_COUNTERPARTY - counterparty dimension
 -- ============================================================
 -- Grain: one row per counterparty.
 -- Serves: counterparty_exposure_usd, high_risk_counterparty_count.
@@ -117,7 +117,7 @@ LEFT JOIN (
 
 
 -- ============================================================
--- 2. DIM_ACCOUNT — account dimension
+-- 2. DIM_ACCOUNT - account dimension
 -- ============================================================
 -- Grain: one row per account.
 -- Serves: counterparty_exposure_usd drill-through.
@@ -148,7 +148,7 @@ FROM PAPERTRAIL.CURATED.ACCOUNT_ENRICHED ae;
 
 
 -- ============================================================
--- 3. FACT_TRANSACTION — transaction fact
+-- 3. FACT_TRANSACTION - transaction fact
 -- ============================================================
 -- Grain: one row per transaction.
 -- Serves: total_suspicious_transaction_volume_usd,
@@ -230,7 +230,7 @@ LEFT JOIN (
 
 
 -- ============================================================
--- 4. FACT_ALERT — alert fact
+-- 4. FACT_ALERT - alert fact
 -- ============================================================
 -- Grain: one row per alert.
 -- Serves: alert_closure_rate (cohort-based).
@@ -274,7 +274,7 @@ FROM PAPERTRAIL.CURATED.ALERT_ENRICHED ae;
 
 
 -- ============================================================
--- 5. FACT_CASE — case / investigation fact
+-- 5. FACT_CASE - case / investigation fact
 -- ============================================================
 -- Grain: one row per case.
 -- Serves: sar_filing_rate, days_to_case_resolution.

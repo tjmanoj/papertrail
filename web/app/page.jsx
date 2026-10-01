@@ -18,7 +18,7 @@ const DIVERGENCE_NOTES = {
       'Included transactions that never settled',
       'Counted transactions linked to already-closed alerts as suspicious',
     ],
-    cost: 'Overstates suspicious volume by $4.5M — a figure that would go to a regulator.',
+    cost: 'Overstates suspicious volume by $4.5M - a figure that would go to a regulator.',
   },
   Q5: {
     verdict: 'DIVERGE',
@@ -49,10 +49,10 @@ const EXAMPLES = [
 
 const fmt = (n, digits = 2) =>
   n === null || n === undefined || Number.isNaN(Number(n))
-    ? '—'
+    ? ' - '
     : Number(n).toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits });
 
-const fmtInt = (n) => (n === null || n === undefined ? '—' : Number(n).toLocaleString('en-US'));
+const fmtInt = (n) => (n === null || n === undefined ? ' - ' : Number(n).toLocaleString('en-US'));
 
 function Mark() {
   return (
@@ -151,13 +151,13 @@ function Ask() {
           <input
             id="ask-input"
             value={question}
-            placeholder="Ask about risk exposure, alerts, or what the policy requires…"
+            placeholder="Ask about risk exposure, alerts, or what the policy requires..."
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && send()}
             disabled={busy}
           />
           <button className="btn" onClick={() => send()} disabled={busy || !question.trim()}>
-            {busy ? 'Asking…' : 'Ask'}
+            {busy ? 'Asking...' : 'Ask'}
           </button>
         </div>
 
@@ -175,7 +175,7 @@ function Ask() {
           ))}
         </div>
         <p className="note" style={{ marginTop: 12 }}>
-          The dashed question asks for a forecast. The agent refuses it — it reports governed historical data
+          The dashed question asks for a forecast. The agent refuses it - it reports governed historical data
           and will not estimate. That refusal is the guardrail, not a failure.
         </p>
       </div>
@@ -195,7 +195,7 @@ function Ask() {
 
       {!result && !busy && !error && sample && (
         <div className="panel">
-          <span className="eyebrow">A saved exchange — ask your own above</span>
+          <span className="eyebrow">A saved exchange - ask your own above</span>
           {sample.tools?.length > 0 && (
             <div className="toolrow">
               {sample.tools.map((t) => (
@@ -264,7 +264,7 @@ function Prove() {
     <>
       <h2 className="page">Prove</h2>
       <p className="lede">
-        We set out to show an ungoverned model gives different answers on repeat asks. It doesn&rsquo;t — across
+        We set out to show an ungoverned model gives different answers on repeat asks. It doesn&rsquo;t - across
         25 runs the generated SQL was byte-identical every time. The real finding is worse.
       </p>
 
@@ -300,7 +300,7 @@ function Prove() {
                     {r.text}
                     {scaled && (
                       <div className="note" style={{ fontSize: 12.5, marginTop: 4 }}>
-                        reported as a fraction by the ungoverned path, as a percentage by the governed one —
+                        reported as a fraction by the ungoverned path, as a percentage by the governed one  -
                         the same value
                       </div>
                     )}
@@ -313,7 +313,7 @@ function Prove() {
                   </td>
                   <td>
                     <span className={`pill ${note.verdict === 'DIVERGE' ? 'diverge' : 'agree'}`}>
-                      {note.verdict || '—'}
+                      {note.verdict || ' - '}
                     </span>
                   </td>
                 </tr>
@@ -327,7 +327,7 @@ function Prove() {
         const note = DIVERGENCE_NOTES[r.id];
         return (
           <div className="panel" key={r.id} style={{ marginTop: 14 }}>
-            <span className="eyebrow">{r.id} — what the ungoverned query missed</span>
+            <span className="eyebrow">{r.id} - what the ungoverned query missed</span>
             <h3 style={{ margin: '0 0 10px', fontFamily: 'var(--cond)', fontSize: 17 }}>{r.text}</h3>
             <ul style={{ margin: '0 0 12px', paddingLeft: 18, color: 'var(--ink-2)' }}>
               {note.missed.map((m) => (
@@ -340,11 +340,11 @@ function Prove() {
             <div className="cols">
               <div>
                 <span className="eyebrow">Ungoverned SQL</span>
-                <pre>{r.ung?.SQL_TEXT || '—'}</pre>
+                <pre>{r.ung?.SQL_TEXT || ' - '}</pre>
               </div>
               <div>
                 <span className="eyebrow">Governed SQL</span>
-                <pre>{r.gov?.SQL_TEXT || '—'}</pre>
+                <pre>{r.gov?.SQL_TEXT || ' - '}</pre>
               </div>
             </div>
           </div>
@@ -361,7 +361,7 @@ function Prove() {
         <p style={{ margin: 0, color: 'var(--ink-2)', fontSize: 14.5 }}>
           The ungoverned path received the same data, the full raw table DDL including column comments, and a
           straightforward instruction to write correct SQL. It was never told about reversals, settlement
-          status, date basis or entity resolution — that knowledge living only in the semantic layer is the
+          status, date basis or entity resolution - that knowledge living only in the semantic layer is the
           entire point. Five runs per question for the ungoverned path, three for the governed. A rigged
           comparison would be worth nothing.
         </p>
@@ -412,7 +412,7 @@ function FileView() {
       <h2 className="page">File</h2>
       <p className="lede">
         A finding is not a chat reply. Every figure is a footnote that resolves to its governed metric, the
-        exact SQL that produced it, the source rows, and the clause that makes it matter — and the SQL can be
+        exact SQL that produced it, the source rows, and the clause that makes it matter - and the SQL can be
         re-run, live, to show the number still holds.
       </p>
 
@@ -434,7 +434,7 @@ function FileView() {
             <span style={{ color: 'var(--ink-3)' }}>
               content hash{' '}
               <span className="num" style={{ color: 'var(--ink-2)' }}>
-                {String(finding.CONTENT_HASH || '').slice(0, 16)}…
+                {String(finding.CONTENT_HASH || '').slice(0, 16)}...
               </span>
             </span>
             <span style={{ color: 'var(--ink-3)' }}>
@@ -482,7 +482,7 @@ function FileView() {
                   <dd>{f.METRIC_DEFINITION}</dd>
                   <dt>Clause</dt>
                   <dd>
-                    <strong style={{ color: 'var(--ink)' }}>§{f.CLAUSE_NUMBER}</strong> — {f.CLAUSE_TEXT_EXCERPT}
+                    <strong style={{ color: 'var(--ink)' }}>§{f.CLAUSE_NUMBER}</strong> - {f.CLAUSE_TEXT_EXCERPT}
                   </dd>
                   <dt>Source</dt>
                   <dd>
@@ -493,7 +493,7 @@ function FileView() {
                         {ids.length} row{ids.length === 1 ? '' : 's'}{' '}
                         <span className="num" style={{ color: 'var(--ink-3)' }}>
                           {ids.slice(0, 5).join(', ')}
-                          {ids.length > 5 ? ' …' : ''}
+                          {ids.length > 5 ? ' ...' : ''}
                         </span>
                       </>
                     )}
@@ -511,7 +511,7 @@ function FileView() {
                     onClick={() => doRerun(f.FOOTNOTE_ID)}
                     disabled={busyId === f.FOOTNOTE_ID}
                   >
-                    {busyId === f.FOOTNOTE_ID ? 'Re-running…' : 'Re-run this SQL now'}
+                    {busyId === f.FOOTNOTE_ID ? 'Re-running...' : 'Re-run this SQL now'}
                   </button>
 
                   {rr && !rr.error && (
@@ -577,7 +577,7 @@ function Evidence() {
     <>
       <h2 className="page">Evidence</h2>
       <p className="lede">
-        Counts read from the Snowflake account at build time. Everything is synthetic — no production data was
+        Counts read from the Snowflake account at build time. Everything is synthetic - no production data was
         used, and the held-out answer key never enters the database.
       </p>
 

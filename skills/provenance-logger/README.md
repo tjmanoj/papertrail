@@ -1,7 +1,7 @@
 # provenance-logger
 
 A CoCo skill that persists a completed regulatory finding and its full
-provenance chain to Snowflake GOVERNANCE tables. Append-only by design —
+provenance chain to Snowflake GOVERNANCE tables. Append-only by design  -
 never updates, never deletes.
 
 ## Why
@@ -17,10 +17,10 @@ verified.
 
 | Parameter | Required | Default | Description |
 |---|---|---|---|
-| `finding` | yes | — | Complete output of `finding-writer` |
-| `question` | yes | — | The analyst's original question |
+| `finding` | yes | - | Complete output of `finding-writer` |
+| `question` | yes | - | The analyst's original question |
 | `analyst_role` | no | `CURRENT_ROLE()` | Role at generation time |
-| `analyst_jurisdiction` | no | — | `AU`, `SG`, or `GLOBAL` |
+| `analyst_jurisdiction` | no | - | `AU`, `SG`, or `GLOBAL` |
 | `supersedes_finding_id` | no | `NULL` | Prior finding this replaces |
 | `database` | no | `PAPERTRAIL` | Target database |
 | `schema` | no | `GOVERNANCE` | Target schema |

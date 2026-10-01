@@ -3,7 +3,7 @@
 **An audit-ready risk and regulatory copilot, built natively on Snowflake.**
 
 Team **Provenance** · Snowflake CoCo CLI Hackathon 2026, GCC Edition
-Problem statement 1 — *Risk, Fraud and Regulatory Intelligence Copilot*
+Problem statement 1 - *Risk, Fraud and Regulatory Intelligence Copilot*
 
 ---
 
@@ -39,16 +39,16 @@ thresholds last month" in ten minutes, then spends two days assembling an eviden
 pack an auditor will accept.
 
 Dashboards hand you numbers nobody can defend. PaperTrail's output is not a chat
-reply — it is a **filing**, in which every figure is a footnote that resolves to:
+reply - it is a **filing**, in which every figure is a footnote that resolves to:
 
 ```
 30.23%
   → metric        structuring_indicator_score
-  → definition    "% of cash deposits in the $8,000–$9,999 band. Denominator is
+  → definition    "% of cash deposits in the $8,000-$9,999 band. Denominator is
                    CASH_DEPOSIT only. Settled, non-reversal transactions only."
-  → SQL           stored verbatim, re-runnable — and it re-runs to 30.23
-  → source rows   43 transaction ids, TX-00229881, TX-00229891, …
-  → clause        §5.2 AML Policy — "detect transaction structuring … deliberately
+  → SQL           stored verbatim, re-runnable - and it re-runs to 30.23
+  → source rows   43 transaction ids, TX-00229881, TX-00229891, ...
+  → clause        §5.2 AML Policy - "detect transaction structuring ... deliberately
                    kept below the $10,000 AUD reporting threshold"
 ```
 
@@ -80,7 +80,7 @@ planted.
 
 **We find 17 of 18 planted positives.** All precision loss is one detector, and
 [`evals/report.md`](evals/report.md) explains exactly why we did not remove it to
-reach 1.000 — velocity monitoring is a regulatory requirement, not an optional
+reach 1.000 - velocity monitoring is a regulatory requirement, not an optional
 enhancement.
 
 The sanctions case is the one worth inspecting: ground truth plants one true match
@@ -88,7 +88,7 @@ The sanctions case is the one worth inspecting: ground truth plants one true mat
 the adjudication and flags only the true one. A score-only detector catches both,
 scores perfect recall, and is worse.
 
-### Governance — measured, not claimed
+### Governance - measured, not claimed
 
 We expected an ungoverned LLM to answer inconsistently. Across 25 runs the
 generated SQL was **byte-identical every time**. The hypothesis was wrong, and the
@@ -96,19 +96,19 @@ real finding is sharper:
 
 | Question | Ungoverned | Governed | |
 |---|---:|---:|---|
-| Suspicious volume, Q3 | 8,797,923 | 4,295,229 | **+105 %** |
+| Suspicious volume, Q3 | 8,797,923 | 4,295,229 | **+105%** |
 | Exposure to CP-STRUCT-01 | 87,185 | 87,185 | agree |
-| Alert closure rate | 63.6 % | 63.6 % | agree |
-| SAR filing share | 6.5 % | 6.5 % | agree |
-| High-risk in Singapore | 23 | 36 | **−36 %** |
+| Alert closure rate | 63.6% | 63.6% | agree |
+| SAR filing share | 6.5% | 6.5% | agree |
+| High-risk in Singapore | 23 | 36 | **-36%** |
 
 **The ungoverned path is perfectly consistent, perfectly confident, and materially
-wrong on two of five** — sounding identical when it is right and when it is not.
+wrong on two of five** - sounding identical when it is right and when it is not.
 The $4.5M overstatement comes from four missed decisions at once: booking date
 rather than value date, reversals counted, unsettled counted, and transactions on
 already-closed alerts treated as suspicious.
 
-Q2 agrees **by coincidence** — it computes direct exposure rather than
+Q2 agrees **by coincidence** - it computes direct exposure rather than
 entity-resolved, and matches only because that counterparty has no
 beneficial-ownership links. Method and per-question SQL diffs:
 [`docs/governance-experiment.md`](docs/governance-experiment.md).
@@ -147,7 +147,7 @@ measured over a corpus with no plausible wrong answers would prove nothing.
                                   │
                           CORTEX AGENT
                routes: figures → Analyst, rules → Search, both when
-               a number needs a rule — and refuses what it cannot ground
+               a number needs a rule - and refuses what it cannot ground
                                   │
             ┌─────────────────────┼─────────────────────┐
      risk-scanner        regulation-linker        finding-writer
@@ -168,7 +168,7 @@ measured over a corpus with no plausible wrong answers would prove nothing.
 
 ### The four CoCo skills, and how they connect
 
-Each has a single responsibility and an explicit boundary — the boundaries are what
+Each has a single responsibility and an explicit boundary - the boundaries are what
 make them composable, and what would let another team lift one out.
 
 | Skill | Does | Explicitly will **not** |
@@ -181,7 +181,7 @@ make them composable, and what would let another team lift one out.
 They chain: `risk-scanner` and `regulation-linker` run independently and feed
 `finding-writer`, whose output goes to `provenance-logger`.
 
-**How `finding-writer` blocks a hallucinated number** — two layers, neither of which
+**How `finding-writer` blocks a hallucinated number** - two layers, neither of which
 is a prompt asking nicely:
 
 1. **Input containment.** The prompt it builds contains only numbered facts extracted
@@ -197,7 +197,7 @@ is a prompt asking nicely:
 
 | Feature | Where |
 |---|---|
-| Semantic Views + verified queries | 7 governed metrics, 10 VQRs — the core of the product |
+| Semantic Views + verified queries | 7 governed metrics, 10 VQRs - the core of the product |
 | Cortex Analyst | every figure |
 | Cortex Search | 72 clauses with citation attributes |
 | Cortex Agents | tool routing, refusal behaviour |
@@ -215,7 +215,7 @@ a feature, we used it.
 ## How CoCo was used
 
 The brief requires CoCo across the full lifecycle and says judges will look for
-evidence at every stage. [`docs/coco/`](docs/coco/) is that evidence — **11 full
+evidence at every stage. [`docs/coco/`](docs/coco/) is that evidence - **11 full
 session transcripts (220 KB) and 26 verbatim prompts**, exported from CoCo's own
 conversation store, not written afterwards.
 
@@ -228,10 +228,10 @@ cortex conversations transcript <session-id>
 
 | Phase | Evidence |
 |---|---|
-| **Planning** | [`01-planning.md`](docs/coco/01-planning.md) — a design-only session; the commit lands *before* any build commit, visible in `git log` |
-| **Development** | [`02-development.md`](docs/coco/02-development.md) — pipelines, semantic view, search, agent, skills |
+| **Planning** | [`01-planning.md`](docs/coco/01-planning.md) - a design-only session; the commit lands *before* any build commit, visible in `git log` |
+| **Development** | [`02-development.md`](docs/coco/02-development.md) - pipelines, semantic view, search, agent, skills |
 | **Execution** | orchestration and scheduled runs |
-| **Testing** | [`04-validation.md`](docs/coco/04-validation.md) — audits, the eval harness, edge cases |
+| **Testing** | [`04-validation.md`](docs/coco/04-validation.md) - audits, the eval harness, edge cases |
 
 ### Three sessions failed, and they are kept
 
@@ -244,7 +244,7 @@ cortex conversations transcript <session-id>
 The pattern across all three: **the agent's summary said success; the database said
 otherwise.** Every claim in this repo is therefore verified by querying Snowflake,
 never by reading a transcript. That discipline also caught a generator that declared
-itself deterministic while minting IDs with `uuid.uuid4()` — which ignores
+itself deterministic while minting IDs with `uuid.uuid4()` - which ignores
 `random.seed()` and silently invalidated the answer key.
 
 ---
@@ -255,7 +255,7 @@ Every object is idempotent DDL and every row is generated, so the whole project
 rebuilds in any Snowflake account:
 
 ```bash
-# 1. Data — byte-for-byte reproducible
+# 1. Data - byte-for-byte reproducible
 python3 data/generate.py
 python3 data/generate.py --verify-determinism     # 12/12 files, SHA-256 identical
 
@@ -286,9 +286,9 @@ produces identical ids.
 
 | Criterion | Where to look |
 |---|---|
-| **Real-world relevance** (30 %) | The [problem](#the-problem) — defending the number, not finding it. Clauses reference AUSTRAC and MAS regimes; metrics carry the governance decision a compliance officer would recognise |
-| **Technical execution** (40 %) | [Snowflake features](#snowflake-features-used) · [architecture](#architecture) · [4 skills](#the-four-coco-skills-and-how-they-connect) · [CoCo evidence](#how-coco-was-used) · `sql/` |
-| **Solution completeness** (30 %) | A public link that opens · a native app · [scored evaluation](#results) · [reproduce from scratch](#reproduce-it-from-scratch) · failures recorded rather than pruned |
+| **Real-world relevance** (30%) | The [problem](#the-problem) - defending the number, not finding it. Clauses reference AUSTRAC and MAS regimes; metrics carry the governance decision a compliance officer would recognise |
+| **Technical execution** (40%) | [Snowflake features](#snowflake-features-used) · [architecture](#architecture) · [4 skills](#the-four-coco-skills-and-how-they-connect) · [CoCo evidence](#how-coco-was-used) · `sql/` |
+| **Solution completeness** (30%) | A public link that opens · a native app · [scored evaluation](#results) · [reproduce from scratch](#reproduce-it-from-scratch) · failures recorded rather than pruned |
 
 ---
 
@@ -296,7 +296,7 @@ produces identical ids.
 
 Stated plainly, because a reviewer will find these anyway:
 
-- **Velocity-spike detection is weak** — 20 false positives. Kept because the
+- **Velocity-spike detection is weak** - 20 false positives. Kept because the
   regulation requires it; not removed to flatter the score.
 - **`CP-VELOCITY-00` is a miss.** Its spike peaks at 2.4× its own baseline, below
   the 5× the policy defines. Catching it would mean relaxing the multiplier below

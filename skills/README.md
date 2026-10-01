@@ -45,11 +45,11 @@ A number in a finding resolves through:
   └── Footnote [1]
         ├── Metric: structuring_indicator_score
         ├── Definition: "Percentage of settled, non-reversal cash deposits
-        │   with amounts in the $8,000–$9,999 band"
+        │   with amounts in the $8,000-$9,999 band"
         ├── SQL: SELECT ... FROM PAPERTRAIL.GOLD.FACT_TRANSACTION ...
         ├── Source rows: [TXN-abc, TXN-def, ...]
         └── Clause: §4.2 "Structuring Detection Thresholds"
-            — Transaction Monitoring Rules (BOTH jurisdictions)
+            - Transaction Monitoring Rules (BOTH jurisdictions)
 ```
 
 ## How to use
@@ -76,13 +76,13 @@ Each skill stands alone:
 All four skills are parameterised. No hardcoded counterparty IDs, dates, or
 PaperTrail-specific values appear in the skill logic. To reuse:
 
-1. **risk-scanner** — point `semantic_view` to your own semantic view, update
+1. **risk-scanner** - point `semantic_view` to your own semantic view, update
    the governed metric list
-2. **regulation-linker** — point `search_service` to your Cortex Search FQN,
+2. **regulation-linker** - point `search_service` to your Cortex Search FQN,
    update the metric-to-query mapping
-3. **finding-writer** — adjust the AI_COMPLETE system prompt for your domain;
+3. **finding-writer** - adjust the AI_COMPLETE system prompt for your domain;
    the validation logic is domain-independent
-4. **provenance-logger** — point to your governance tables; the append-only
+4. **provenance-logger** - point to your governance tables; the append-only
    pattern and content-hash mechanism are generic
 
 ## Prerequisites

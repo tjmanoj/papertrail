@@ -17,7 +17,7 @@ Plants ALL SIX typologies from data-model.md §4:
   5. Velocity Spike
   6. Mule Network
 
-Also produces data/out/ground_truth.csv — the held-out answer key.
+Also produces data/out/ground_truth.csv - the held-out answer key.
 """
 
 import os
@@ -56,7 +56,7 @@ if "--verify-determinism" in sys.argv:
     files1 = sorted(os.listdir(dir1))
     files2 = sorted(os.listdir(dir2))
     if files1 != files2:
-        print(f"[determinism] FAIL — file lists differ: {files1} vs {files2}")
+        print(f"[determinism] FAIL - file lists differ: {files1} vs {files2}")
         sys.exit(1)
 
     for fname in files1:
@@ -70,10 +70,10 @@ if "--verify-determinism" in sys.argv:
     shutil.rmtree(dir1)
     shutil.rmtree(dir2)
     if all_pass:
-        print("[determinism] ALL FILES PASS — output is fully deterministic.")
+        print("[determinism] ALL FILES PASS - output is fully deterministic.")
         sys.exit(0)
     else:
-        print("[determinism] FAIL — see above.")
+        print("[determinism] FAIL - see above.")
         sys.exit(1)
 
 # ── reproducibility ─────────────────────────────────────────
@@ -279,7 +279,7 @@ for _ in range(n_banks):
 
 # ── Typology-specific counterparties (reserved IDs) ────────
 
-# T1: Structuring — 4 counterparties
+# T1: Structuring - 4 counterparties
 structuring_cps = []
 for i in range(4):
     cp = make_individual(cid=f"CP-STRUCT-{i:02d}",
@@ -288,7 +288,7 @@ for i in range(4):
     counterparties.append(cp)
     structuring_cps.append(cp["counterparty_id"])
 
-# T2: Round-Tripping — 3 counterparties (corporates)
+# T2: Round-Tripping - 3 counterparties (corporates)
 roundtrip_cps = []
 for i in range(3):
     cp = make_corporate(cid=f"CP-ROUNDTRIP-{i:02d}",
@@ -297,7 +297,7 @@ for i in range(3):
     counterparties.append(cp)
     roundtrip_cps.append(cp["counterparty_id"])
 
-# T3: Dormant Reactivation — 2 counterparties
+# T3: Dormant Reactivation - 2 counterparties
 dormant_cps = []
 for i in range(2):
     cp = make_individual(cid=f"CP-DORMANT-{i:02d}",
@@ -307,7 +307,7 @@ for i in range(2):
     counterparties.append(cp)
     dormant_cps.append(cp["counterparty_id"])
 
-# T4: Sanctions Near-Match — 2 counterparties
+# T4: Sanctions Near-Match - 2 counterparties
 sanctions_cps = []
 cp_s0 = make_individual(cid="CP-SANCTIONS-00", jurisdiction="AU", risk="MEDIUM")
 cp_s0["full_legal_name"] = "Aleksandr Petrov"
@@ -319,7 +319,7 @@ cp_s1["full_legal_name"] = "Mohammad Al-Rashid"
 counterparties.append(cp_s1)
 sanctions_cps.append(cp_s1["counterparty_id"])
 
-# T5: Velocity Spike — 3 counterparties
+# T5: Velocity Spike - 3 counterparties
 velocity_cps = []
 for i in range(3):
     cp = make_individual(cid=f"CP-VELOCITY-{i:02d}",
@@ -328,7 +328,7 @@ for i in range(3):
     counterparties.append(cp)
     velocity_cps.append(cp["counterparty_id"])
 
-# T6: Mule Network — 5 counterparties (individuals, recently onboarded, LOW risk)
+# T6: Mule Network - 5 counterparties (individuals, recently onboarded, LOW risk)
 mule_cps = []
 for i in range(5):
     cp = make_individual(
@@ -426,7 +426,7 @@ for cid in structuring_cps:
         accounts.append(a)
         acct_by_cp[cid].append(a)
 
-# Dormant accounts — mark specific ones as DORMANT with old open dates
+# Dormant accounts - mark specific ones as DORMANT with old open dates
 dormant_accts = []
 for cid in dormant_cps:
     # ensure at least one dormant account
@@ -1209,7 +1209,7 @@ DOCS = [
              "Fuzzy matching scores above 90 are auto-escalated as potential true matches. "
              "Scores between 60 and 89 require manual review by a qualified analyst. Scores "
              "below 60 are auto-dismissed. The bank maintains a near-match watch zone between "
-             "75 and 89 where enhanced scrutiny is applied — these are the cases most likely "
+             "75 and 89 where enhanced scrutiny is applied - these are the cases most likely "
              "to represent evasion through spelling variation, transliteration differences, or "
              "deliberate name modification."),
             ("4.1", "Escalation Path",
@@ -1228,9 +1228,9 @@ DOCS = [
         "clauses": [
             ("3.1", "Filing Thresholds",
              "A Suspicious Transaction Report must be filed with AUSTRAC within 72 hours of "
-             "forming a suspicion. The total_suspicious_transaction_volume_usd metric — defined "
+             "forming a suspicion. The total_suspicious_transaction_volume_usd metric - defined "
              "as the sum of settled, non-reversed transactions linked to open or escalated alerts "
-             "— provides the quantitative basis for threshold reporting. Pending transactions are "
+             " -  provides the quantitative basis for threshold reporting. Pending transactions are "
              "excluded until settlement. Reversed transactions are excluded to prevent double-counting."),
             ("4.1", "Filing Rate Expectations",
              "The sar_filing_rate metric measures the percentage of opened investigation cases "
@@ -1257,8 +1257,8 @@ DOCS = [
             ("2.1", "Risk-Based Refresh Cycles",
              "KYC reviews must be conducted on a risk-based schedule: HIGH and VERY_HIGH risk "
              "counterparties require annual review; MEDIUM risk requires biennial review; LOW "
-             "risk requires triennial review. The high_risk_counterparty_count metric — the count "
-             "of counterparties currently rated HIGH or VERY_HIGH — drives resource planning for "
+             "risk requires triennial review. The high_risk_counterparty_count metric - the count "
+             "of counterparties currently rated HIGH or VERY_HIGH - drives resource planning for "
              "annual review cycles. Only counterparties with at least one active account are "
              "included; exited relationships are excluded."),
             ("3.1", "Trigger-Based Refresh",
@@ -1284,7 +1284,7 @@ DOCS = [
     {
         "document_id": "DOC-RISK-APPETITE",
         "document_type": "RISK_APPETITE_STATEMENT",
-        "title": "Board Risk Appetite Statement — AML/Sanctions/Fraud",
+        "title": "Board Risk Appetite Statement - AML/Sanctions/Fraud",
         "version": "v4.0",
         "effective_date": "2024-09-01",
         "jurisdiction": "AU",
@@ -1301,7 +1301,7 @@ DOCS = [
              "analyst assignment. The alert ageing metric is monitored weekly and reported to "
              "the Chief Compliance Officer."),
             ("5.1", "Round-Tripping Detection",
-             "The bank has zero tolerance for round-tripping — funds that leave an account and "
+             "The bank has zero tolerance for round-tripping - funds that leave an account and "
              "return within 10 business days from a related entity. The monitoring system must "
              "flag wire transfers where the outbound beneficiary name shares significant tokens "
              "with the inbound originator name and the amounts match within 5%. All round-trip "
@@ -1322,7 +1322,7 @@ DOCS = [
              "prior board approval. Nostro/vostro account activity must be monitored for "
              "unusual patterns including dormant-then-active cycles and velocity spikes."),
             ("3.1", "Dormant Account Reactivation",
-             "Any account — retail or correspondent — that has been dormant (no customer-initiated "
+             "Any account - retail or correspondent - that has been dormant (no customer-initiated "
              "transactions) for 12 or more months and then receives a transaction must generate "
              "a dormant reactivation alert. The account must be reviewed before further transactions "
              "are permitted. Transactions totalling over $50,000 within 14 days of reactivation "
@@ -1410,9 +1410,9 @@ DOCS = [
              "compliance breach."),
             ("8.1", "Structuring Pattern Variants",
              "In addition to the standard structuring pattern (multiple transactions below $10,000), "
-             "the monitoring system must detect: (a) round-number structuring — deposits consistently "
-             "at $9,000 or $9,500; (b) sequential structuring — deposits at increasing amounts across "
-             "consecutive days; (c) smurfing — multiple individuals depositing to the same account on "
+             "the monitoring system must detect: (a) round-number structuring - deposits consistently "
+             "at $9,000 or $9,500; (b) sequential structuring - deposits at increasing amounts across "
+             "consecutive days; (c) smurfing - multiple individuals depositing to the same account on "
              "the same day. Each variant triggers the same structuring alert but is tagged with the "
              "specific sub-pattern for investigation guidance."),
         ],
@@ -1441,7 +1441,7 @@ DOCS = [
              "period following departure from the public role."),
             ("3.1", "Enhanced Monitoring for PEPs",
              "PEP accounts are subject to enhanced transaction monitoring with reduced thresholds: "
-             "the structuring detection window is lowered from $8,000–$9,999 to $5,000–$9,999, "
+             "the structuring detection window is lowered from $8,000-$9,999 to $5,000-$9,999, "
              "and the velocity multiplier is reduced from 5x to 3x. All wire transfers by PEP "
              "counterparties exceeding $15,000 require pre-release review by a senior analyst. "
              "These thresholds apply to aggregate activity across all accounts held by the PEP."),
@@ -1515,10 +1515,10 @@ DOCS = [
              "of the reactivation request. Transactions must not be processed until the EDD "
              "review is complete."),
             ("4.1", "Jurisdictional Risk Assessment",
-             "The bank maintains a tiered jurisdictional risk model: Tier 1 (LOW) — FATF "
-             "members with satisfactory mutual evaluations; Tier 2 (MEDIUM) — non-FATF members "
-             "with cooperative information-sharing agreements; Tier 3 (HIGH) — FATF grey-listed "
-             "jurisdictions; Tier 4 (VERY_HIGH) — FATF black-listed or sanctioned jurisdictions. "
+             "The bank maintains a tiered jurisdictional risk model: Tier 1 (LOW) - FATF "
+             "members with satisfactory mutual evaluations; Tier 2 (MEDIUM) - non-FATF members "
+             "with cooperative information-sharing agreements; Tier 3 (HIGH) - FATF grey-listed "
+             "jurisdictions; Tier 4 (VERY_HIGH) - FATF black-listed or sanctioned jurisdictions. "
              "All transactions involving Tier 3 or Tier 4 jurisdictions must be pre-screened "
              "regardless of amount."),
             ("4.4", "Concentration Risk in High-Risk Jurisdictions",
@@ -1558,7 +1558,7 @@ DOCS = [
     {
         "document_id": "DOC-RECORD-RETENTION",
         "document_type": "RECORD_RETENTION_POLICY",
-        "title": "Record-Keeping and Retention Policy — Financial Crime",
+        "title": "Record-Keeping and Retention Policy - Financial Crime",
         "version": "v3.0",
         "effective_date": "2024-02-01",
         "jurisdiction": "AU",
@@ -1668,7 +1668,7 @@ DOCS = [
              "A SAR must be filed when the investigation establishes reasonable grounds to "
              "suspect money laundering, terrorism financing, or other serious financial crime. "
              "The sar_filing_rate across all investigations is monitored as a quality indicator. "
-             "The filing must occur within 72 hours of forming the suspicion — this is measured "
+             "The filing must occur within 72 hours of forming the suspicion - this is measured "
              "from the analyst's documented suspicion timestamp, not from the date the alert "
              "was generated."),
             ("5.1", "Closure Without SAR",
@@ -1760,7 +1760,7 @@ scr_df.to_csv(OUT / "watchlist_screening_result.csv", index=False)
 doc_df.to_csv(OUT / "regulatory_document.csv", index=False)
 clause_df.to_csv(OUT / "regulatory_document_clause.csv", index=False)
 
-# Ground truth (answer key — never loaded into Snowflake)
+# Ground truth (answer key - never loaded into Snowflake)
 gt_df = pd.DataFrame(ground_truth)
 gt_df.to_csv(OUT / "ground_truth.csv", index=False)
 

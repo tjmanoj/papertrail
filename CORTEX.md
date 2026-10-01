@@ -1,7 +1,7 @@
-# PaperTrail — project brief for CoCo
+# PaperTrail - project brief for CoCo
 
 Team **Provenance** · Snowflake CoCo CLI Hackathon 2026, GCC Edition
-Problem statement 1 — *Risk, Fraud and Regulatory Intelligence Copilot*
+Problem statement 1 - *Risk, Fraud and Regulatory Intelligence Copilot*
 
 ## What we are building
 
@@ -20,7 +20,7 @@ is expensive.** PaperTrail defends the number.
    stores, or third-party LLM APIs. If Snowflake has a feature for it, use that
    feature. This is a judged criterion, not a preference.
 2. **Synthetic data only.** Never real, scraped, or production data. Generated
-   data must be *referentially consistent* — foreign keys resolve, dates order
+   data must be *referentially consistent* - foreign keys resolve, dates order
    sensibly, and fraud signal is genuinely present rather than random noise.
    Every generated document carries a synthetic watermark.
 3. **No figure without provenance.** If a number cannot be traced to governed SQL
@@ -32,7 +32,7 @@ is expensive.** PaperTrail defends the number.
 
 ## Conventions
 
-- All DDL lives in `sql/`, numbered in run order, and must be **idempotent** —
+- All DDL lives in `sql/`, numbered in run order, and must be **idempotent**  -
   `CREATE OR REPLACE` / `IF NOT EXISTS` throughout, so the entire project can be
   rebuilt from scratch in any account. Never create an object only in-session;
   if it matters, it belongs in a numbered file.
@@ -54,5 +54,5 @@ recognise every metric and dimension in the semantic view. Prefer
 - Explain what you are about to change before changing it, and say why.
 - Prefer one working component over three half-built ones.
 - When a Snowflake feature could replace code we would otherwise write, say so.
-- If a request would breach a constraint above, refuse and explain — do not
+- If a request would breach a constraint above, refuse and explain - do not
   quietly work around it.

@@ -7,7 +7,7 @@ for use in regulatory findings.
 ## Why
 
 A compliance finding that cites "the AML policy" is not auditable. An examiner
-needs the specific clause — §3.1 of the Transaction Monitoring Rules — and
+needs the specific clause - §3.1 of the Transaction Monitoring Rules - and
 enough text to verify the citation without opening the source document. This
 skill bridges the gap between a risk metric and the regulation that makes it
 matter.
@@ -18,13 +18,13 @@ matter.
 
 | Parameter | Required | Default | Description |
 |---|---|---|---|
-| `query` | yes | — | Metric name, risk context, or regulatory topic |
+| `query` | yes | - | Metric name, risk context, or regulatory topic |
 | `search_service` | no | `PAPERTRAIL.GOLD.REGULATION_SEARCH` | Cortex Search FQN |
-| `jurisdiction` | no | — | Filter: `AU`, `SG`, or `BOTH` |
+| `jurisdiction` | no | - | Filter: `AU`, `SG`, or `BOTH` |
 | `max_results` | no | `5` | Clauses to return |
-| `clause_role` | no | — | Filter: `DEFINES`, `OPERATIONALISES`, `REFERENCES` |
+| `clause_role` | no | - | Filter: `DEFINES`, `OPERATIONALISES`, `REFERENCES` |
 
-### Output — Citation array
+### Output - Citation array
 
 ```json
 {

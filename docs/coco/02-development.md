@@ -1,4 +1,4 @@
-# Phase 2 — Development (RAW layer)
+# Phase 2 - Development (RAW layer)
 
 **Surface:** CoCo CLI, headless via `cortex exec` · **Connection:** AT72852
 **Date:** 2026-10-01
@@ -14,12 +14,12 @@
 
 ## What was built
 
-- `sql/01-raw.sql` — 11 RAW tables with column comments, idempotent.
-- `sql/02-load.sql` — stage, file format, TRUNCATE + COPY INTO, idempotent.
-- `data/generate.py` — deterministic generator: 809 counterparties, 1,497
+- `sql/01-raw.sql` - 11 RAW tables with column comments, idempotent.
+- `sql/02-load.sql` - stage, file format, TRUNCATE + COPY INTO, idempotent.
+- `data/generate.py` - deterministic generator: 809 counterparties, 1,497
   accounts, 240,798 transactions over 18 months, plus alerts, cases, watchlist
   and screening results.
-- `data/out/ground_truth.csv` — held-out answer key for the six planted
+- `data/out/ground_truth.csv` - held-out answer key for the six planted
   typologies. **Never loaded into Snowflake**; absence from the stage is
   asserted during every reload.
 
@@ -33,7 +33,7 @@ produced different account, alert and case IDs.**
 Consequence: regenerating the data silently invalidated `ground_truth.csv`,
 because the key referenced IDs that no longer existed. This was caught by
 comparing local CSV record counts against Snowflake rather than trusting the
-agent's own summary — which had attributed the row-count drift to "a slightly
+agent's own summary - which had attributed the row-count drift to "a slightly
 newer data generation run."
 
 Fixed by replacing the ID helper with a counter hashed against a fixed salt and
@@ -56,6 +56,6 @@ account meaningful rather than approximate.
 - `ground_truth.csv` confirmed absent from the stage.
 - `PAPERTRAIL_WH` suspended.
 
-Note: logical CSV records are counted with Python's `csv` module, not `wc -l` —
+Note: logical CSV records are counted with Python's `csv` module, not `wc -l`  -
 `regulatory_document.csv` holds 6 records across 48 physical lines because clause
 text contains embedded newlines.

@@ -1,13 +1,13 @@
 ---
 name: finding-writer
-description: Assembles a formal regulatory finding from provenance bundles and clause citations. Every figure in the output is a footnote that resolves to its source bundle. Structurally incapable of stating an ungrounded number — enforced by two-layer validation, not by instruction alone.
+description: Assembles a formal regulatory finding from provenance bundles and clause citations. Every figure in the output is a footnote that resolves to its source bundle. Structurally incapable of stating an ungrounded number - enforced by two-layer validation, not by instruction alone.
 ---
 
 # Finding Writer
 
 You are executing the **finding-writer** skill. Your job is to assemble a
 formal regulatory finding from evidence that other skills have already gathered.
-You do NOT query data or retrieve regulations — you format what you are given.
+You do NOT query data or retrieve regulations - you format what you are given.
 
 ## The no-ungrounded-figure guarantee
 
@@ -16,7 +16,7 @@ it came from a provenance bundle provided as input**.
 
 This is enforced by two structural layers, not by asking the LLM nicely:
 
-### Layer 1 — Input containment
+### Layer 1 - Input containment
 
 The AI_COMPLETE prompt you construct contains ONLY:
 - Numbered FACTS extracted from provenance bundles (each with a [N] marker)
@@ -27,7 +27,7 @@ The model receives NO raw data, NO database access, NO SQL execution
 capability. There is literally no path for an ungoverned number to enter
 the prompt.
 
-### Layer 2 — Output validation
+### Layer 2 - Output validation
 
 After AI_COMPLETE returns, you MUST run validation before returning the
 finding. Validation checks:
@@ -37,7 +37,7 @@ finding. Validation checks:
    appears in at least one input fact
 3. No `[N]` marker references a fact index that doesn't exist
 
-If validation fails, you MUST return an error — never the invalid finding.
+If validation fails, you MUST return an error - never the invalid finding.
 
 Together these layers mean: even if the LLM hallucinates a number, it cannot
 survive validation because it won't appear in any provenance bundle.
@@ -53,7 +53,7 @@ survive validation because it won't appear in any provenance bundle.
 
 ## Procedure
 
-### Step 1 — Build the numbered fact list
+### Step 1 - Build the numbered fact list
 
 For each provenance bundle, create a numbered fact entry:
 
@@ -71,19 +71,19 @@ For each provenance bundle, create a numbered fact entry:
 
 Store this mapping: `{1: bundle_0, 2: bundle_1, ...}`
 
-### Step 2 — Build the clause citation list
+### Step 2 - Build the clause citation list
 
 For each regulatory clause, format:
 
 ```
-Clause A: §4.2 "Structuring Detection Thresholds" — Transaction Monitoring Rules
+Clause A: §4.2 "Structuring Detection Thresholds" - Transaction Monitoring Rules
   "The institution must maintain automated monitoring ..."
 
-Clause B: §3.1 "Reporting Obligations" — AML Policy
+Clause B: §3.1 "Reporting Obligations" - AML Policy
   "All suspicious activity ..."
 ```
 
-### Step 3 — Call AI_COMPLETE
+### Step 3 - Call AI_COMPLETE
 
 Execute this SQL:
 
@@ -92,12 +92,12 @@ SELECT SNOWFLAKE.CORTEX.AI_COMPLETE(
   '<model>',
   CONCAT(
     'You are a compliance analyst writing a formal regulatory finding.\n\n',
-    'RULES (these are absolute — violating any one invalidates the finding):\n',
+    'RULES (these are absolute - violating any one invalidates the finding):\n',
     '1. You may ONLY cite numbers that appear in the FACTS section below.\n',
     '2. Every number you state MUST be immediately followed by a footnote [N]\n',
     '   where N is the fact number it came from.\n',
     '3. If the question requires a figure not present in FACTS, write:\n',
-    '   "This finding cannot substantiate [topic] — no governed metric was provided."\n',
+    '   "This finding cannot substantiate [topic] - no governed metric was provided."\n',
     '4. Every finding must reference at least one regulatory clause by letter.\n',
     '5. Do NOT round, recompute, or derive new numbers from the facts.\n',
     '6. Write in formal third-person register suitable for a regulatory filing.\n\n',
@@ -110,22 +110,22 @@ SELECT SNOWFLAKE.CORTEX.AI_COMPLETE(
 ) AS finding_text;
 ```
 
-### Step 4 — Validate the output (MANDATORY — never skip)
+### Step 4 - Validate the output (MANDATORY - never skip)
 
 Run these checks on the finding text returned by AI_COMPLETE:
 
-**Check A — Footnote coverage:**
+**Check A - Footnote coverage:**
 Extract all `[N]` markers from the text. Verify every N is in range
 `[1..number_of_facts]`. If any N is out of range → REJECT.
 
-**Check B — Number grounding:**
+**Check B - Number grounding:**
 Extract all numbers from the text (regex: numbers with optional commas,
 decimals, dollar signs, percent signs). Exclude footnote markers themselves.
 For each extracted number, verify it appears (possibly reformatted) in at
 least one provenance bundle's `result_value` or `result_rows`. If an
 ungrounded number is found → REJECT.
 
-**Check C — Clause references:**
+**Check C - Clause references:**
 Verify the finding references at least one clause letter (A, B, C...) that
 maps to a provided regulatory clause.
 
@@ -140,7 +140,7 @@ If ANY check fails, return:
 
 Do NOT retry automatically. Return the error so the caller can decide.
 
-### Step 5 — Build the output
+### Step 5 - Build the output
 
 ```json
 {
@@ -167,7 +167,7 @@ Do NOT retry automatically. Return the error so the caller can decide.
 Each footnote merges data from the provenance bundle and the clause citation
 that was mapped to that metric.
 
-### Step 6 — Return
+### Step 6 - Return
 
 Present the complete output structure. Do NOT add commentary beyond the
 structure itself.
@@ -183,11 +183,11 @@ structure itself.
 
 ## What this skill does NOT do
 
-- Does NOT query the database — it formats what it is given
-- Does NOT retrieve regulatory documents — those come from `regulation-linker`
+- Does NOT query the database - it formats what it is given
+- Does NOT retrieve regulatory documents - those come from `regulation-linker`
 - Does NOT compute, derive, or estimate any numbers
-- Does NOT write to GOVERNANCE tables — that is `provenance-logger`'s job
-- Does NOT retry on validation failure — it surfaces the error
+- Does NOT write to GOVERNANCE tables - that is `provenance-logger`'s job
+- Does NOT retry on validation failure - it surfaces the error
 - Does NOT skip validation under any circumstances
 
 ## Adapting to another project

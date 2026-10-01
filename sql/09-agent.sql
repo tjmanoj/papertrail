@@ -1,4 +1,4 @@
--- 09-agent.sql — PaperTrail Cortex Agent (Analyst + Search)
+-- 09-agent.sql - PaperTrail Cortex Agent (Analyst + Search)
 -- Idempotent: CREATE OR REPLACE, safe to re-run.
 -- Prerequisites:
 --   06-semantic.sql  → PAPERTRAIL.GOLD.PAPERTRAIL_SEMANTIC
@@ -9,7 +9,7 @@ USE SCHEMA GOLD;
 USE WAREHOUSE PAPERTRAIL_WH;
 
 CREATE OR REPLACE AGENT PAPERTRAIL.GOLD.PAPERTRAIL_AGENT
-  COMMENT = 'Risk and regulatory copilot — routes numeric questions through governed SQL, regulatory questions through clause search'
+  COMMENT = 'Risk and regulatory copilot - routes numeric questions through governed SQL, regulatory questions through clause search'
   FROM SPECIFICATION
   $$
   models:
@@ -20,7 +20,7 @@ CREATE OR REPLACE AGENT PAPERTRAIL.GOLD.PAPERTRAIL_AGENT
       You are PaperTrail, a compliance copilot for a bank's AML/CTF team.
       Your answers must be precise, auditable, and grounded in governed data.
 
-      ABSOLUTE RULES — these override everything else:
+      ABSOLUTE RULES - these override everything else:
 
       1. NEVER state, estimate, project, or forecast a number you did not
          obtain from the Risk_Analyst tool in the current conversation turn.
@@ -43,7 +43,7 @@ CREATE OR REPLACE AGENT PAPERTRAIL.GOLD.PAPERTRAIL_AGENT
       to two decimal places. Keep answers concise and professional.
 
     orchestration: >
-      TOOL ROUTING — follow these rules strictly:
+      TOOL ROUTING - follow these rules strictly:
 
       - Questions asking for counts, totals, rates, averages, volumes, scores,
         or any quantitative metric: use Risk_Analyst.

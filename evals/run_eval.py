@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-PaperTrail — Detection Evaluation Harness
+PaperTrail - Detection Evaluation Harness
 
 Reads ground truth LOCALLY from data/out/ground_truth.csv (never loaded into
 Snowflake).  Runs governed detection queries against PAPERTRAIL.GOLD.*, scores
@@ -26,12 +26,12 @@ GROUND_TRUTH_PATH = PROJECT_ROOT / "data" / "out" / "ground_truth.csv"
 REPORT_PATH = PROJECT_ROOT / "evals" / "report.md"
 
 # ---------------------------------------------------------------------------
-# Detection queries — governed SQL derived from regulatory clause thresholds
+# Detection queries - governed SQL derived from regulatory clause thresholds
 # ---------------------------------------------------------------------------
 
 DETECTION_QUERIES = {}
 
-# 1. STRUCTURING — DOC-AML-POLICY-5-2 (AML Policy §5.2)
+# 1. STRUCTURING - DOC-AML-POLICY-5-2 (AML Policy §5.2)
 #    "Cash deposits $8,000-$9,999 in clusters of 3+ within rolling 7-day window."
 #    Settled, non-reversal, non-reversed. Cross-channel aggregation per §3.4.
 DETECTION_QUERIES["STRUCTURING"] = """
@@ -59,8 +59,8 @@ FROM rolling_clusters
 WHERE txns_in_window >= 3
 """
 
-# 2. ROUND_TRIPPING — DOC-RISK-APPETITE-5-1 (Risk Appetite §5.1)
-#    "The bank has zero tolerance for round-tripping — funds that leave an
+# 2. ROUND_TRIPPING - DOC-RISK-APPETITE-5-1 (Risk Appetite §5.1)
+#    "The bank has zero tolerance for round-tripping - funds that leave an
 #    account and return within 10 business days from a related entity. The
 #    monitoring system must flag wire transfers where the outbound beneficiary
 #    name shares significant tokens with the inbound originator name and the
@@ -104,7 +104,7 @@ JOIN wire_ins wi
   AND LENGTH(SPLIT_PART(UPPER(wo.beneficiary_name), ' ', 2)) >= 4
 """
 
-# 3. DORMANT_REACTIVATION — DOC-TXN-MONITORING-5-1 / DOC-CORRESPONDENT-2-1
+# 3. DORMANT_REACTIVATION - DOC-TXN-MONITORING-5-1 / DOC-CORRESPONDENT-2-1
 #    §5.1: "Accounts inactive for 12 or more months are classified as DORMANT
 #    and any subsequent activity triggers a reactivation alert per the
 #    Correspondent Banking guidance §3.1."
@@ -135,7 +135,7 @@ WHERE txn_count >= 10
   AND total_amount > 50000
 """
 
-# 4. VELOCITY_SPIKE — DOC-AML-POLICY-8-1 + DOC-TXN-MONITORING-5-4 + DOC-PEP-HANDLING-3-1
+# 4. VELOCITY_SPIKE - DOC-AML-POLICY-8-1 + DOC-TXN-MONITORING-5-4 + DOC-PEP-HANDLING-3-1
 #    §8.1: "Accounts exhibiting transaction counts exceeding 5 times their
 #    trailing 6-month monthly average within any single calendar month shall
 #    generate a velocity spike alert."
@@ -151,7 +151,7 @@ WHERE txn_count >= 10
 #    default → 5x, capped at 10x.
 #    Seasonality discriminator (§8.1): a spike is suppressed if the trailing
 #    6-month window already contains ≥ 2 months where txn_count exceeded
-#    2× the trailing average — indicating a recurring elevated pattern
+#    2× the trailing average - indicating a recurring elevated pattern
 #    (seasonal) rather than a one-off anomalous departure.
 #
 #    Minimum-baseline floor (trailing_6mo_avg >= 10):
@@ -163,8 +163,8 @@ WHERE txn_count >= 10
 #    A floor TIGHTENS the rule (requires higher baseline to trigger), which
 #    §2.3 permits; it does not relax it.
 #    Distribution evidence: the trailing-average population starts at ~7
-#    txns/month. Below 10, a 5× spike is < 50 transactions/month — under
-#    2.5 per business day — where a single batch or reconciliation run
+#    txns/month. Below 10, a 5× spike is < 50 transactions/month - under
+#    2.5 per business day - where a single batch or reconciliation run
 #    produces ratios that are arithmetically large but behaviourally
 #    meaningless. The floor is set at 10, the point where a 5× departure
 #    represents ≥ 50 transactions and the natural coefficient of variation
@@ -236,7 +236,7 @@ LEFT JOIN seasonality_check sck
 WHERE COALESCE(sck.elevated_trailing_months, 0) < 2
 """
 
-# 5. MULE_NETWORK — DOC-AML-POLICY-9-1 (AML Policy §9.1)
+# 5. MULE_NETWORK - DOC-AML-POLICY-9-1 (AML Policy §9.1)
 #    "The bank shall monitor for money mule patterns: multiple apparently
 #    unrelated accounts receiving funds from the same originator and forwarding
 #    to the same beneficiary within a short timeframe (72 hours). Funds
@@ -289,9 +289,9 @@ JOIN mule_networks mn
   AND pt.beneficiary_name = mn.beneficiary_name
 """
 
-# 6. SANCTIONS_NEAR_MATCH — DOC-SANCTIONS-PROCEDURE-3-2 (Sanctions Procedure §3.2)
+# 6. SANCTIONS_NEAR_MATCH - DOC-SANCTIONS-PROCEDURE-3-2 (Sanctions Procedure §3.2)
 #    Screening scores 60-89 require manual review. Only flag counterparties
-#    whose screening is still PENDING_REVIEW or CONFIRMED_MATCH — not those
+#    whose screening is still PENDING_REVIEW or CONFIRMED_MATCH - not those
 #    already adjudicated as FALSE_POSITIVE. The adjudication status is part of
 #    the governed decision, not an afterthought.
 DETECTION_QUERIES["SANCTIONS_NEAR_MATCH"] = """
@@ -400,24 +400,24 @@ def score(detected: set, positives: set, known_fp: set) -> dict:
 # ---------------------------------------------------------------------------
 
 REGULATORY_REFS = {
-    "STRUCTURING": "AML Policy §5.2 — cash deposits $8K–$9,999, 3+ in rolling 7-day window",
-    "ROUND_TRIPPING": "Risk Appetite §5.1 — wire out/in within 10 days, amounts ±5%, name-token match",
-    "DORMANT_REACTIVATION": "Correspondent Banking §3.1 — dormant 12+ months, >$50K in 14 days",
-    "VELOCITY_SPIKE": "AML Policy §8.1 / TXN Monitoring §5.4 — monthly count >5× trailing 6-month avg",
-    "MULE_NETWORK": "AML Policy §9.1 — 3+ CPs, same originator→beneficiary, 72h, <10% retention",
-    "SANCTIONS_NEAR_MATCH": "Sanctions Proc §3.2 — score ≥60, status not FALSE_POSITIVE/NO_MATCH",
+    "STRUCTURING": "AML Policy §5.2 - cash deposits $8K-$9,999, 3+ in rolling 7-day window",
+    "ROUND_TRIPPING": "Risk Appetite §5.1 - wire out/in within 10 days, amounts ±5%, name-token match",
+    "DORMANT_REACTIVATION": "Correspondent Banking §3.1 - dormant 12+ months, >$50K in 14 days",
+    "VELOCITY_SPIKE": "AML Policy §8.1 / TXN Monitoring §5.4 - monthly count >5× trailing 6-month avg",
+    "MULE_NETWORK": "AML Policy §9.1 - 3+ CPs, same originator→beneficiary, 72h, <10% retention",
+    "SANCTIONS_NEAR_MATCH": "Sanctions Proc §3.2 - score ≥60, status not FALSE_POSITIVE/NO_MATCH",
 }
 
 
 def write_report(results: dict, report_path: Path):
     lines = []
-    lines.append("# PaperTrail — Detection Evaluation Report\n")
+    lines.append("# PaperTrail - Detection Evaluation Report\n")
     lines.append("## Method\n")
     lines.append(
         "Six detection queries run against `PAPERTRAIL.GOLD.*` and "
         "`PAPERTRAIL.RAW.WATCHLIST_SCREENING_RESULT`. Each query implements "
         "the thresholds and logic stated in the bank's regulatory document "
-        "clauses — the detector does **not** know the planted counterparty IDs. "
+        "clauses - the detector does **not** know the planted counterparty IDs. "
         "Results are scored at **counterparty level** against the hold-out "
         "`ground_truth.csv` (never loaded into Snowflake).\n"
     )
@@ -493,7 +493,7 @@ def write_report(results: dict, report_path: Path):
             "The detector correctly distinguished CP-SANCTIONS-00 (true positive, "
             "score 82.5, PENDING_REVIEW) from CP-SANCTIONS-01 (false positive, "
             "score 78.0, adjudicated FALSE_POSITIVE). The governed query respects "
-            "the analyst adjudication status — it does not re-flag screenings that "
+            "the analyst adjudication status - it does not re-flag screenings that "
             "have already been reviewed and dismissed. A naive score-only detector "
             "would flag both and inflate recall while destroying precision.\n"
         )
@@ -521,7 +521,7 @@ def write_report(results: dict, report_path: Path):
     if v["fn_ids"]:
         lines.append(
             f"Missed counterparties: {', '.join(v['fn_ids'])}. These counterparties "
-            f"have elevated but inconsistent baselines — their trailing 6-month "
+            f"have elevated but inconsistent baselines - their trailing 6-month "
             f"average is high enough that no single month exceeds the 5× threshold. "
             f"The planted signal was present but masked by prior volatility.\n"
         )
@@ -541,7 +541,7 @@ def write_report(results: dict, report_path: Path):
         "4. **Regulatory completeness.** Only 6 typologies are tested. The "
         "regulatory framework defines additional controls (PEP monitoring, EDD "
         "triggers, concentration limits) that are not evaluated here.\n"
-        "5. **Adversarial robustness.** Planted signals are cooperative — they "
+        "5. **Adversarial robustness.** Planted signals are cooperative - they "
         "behave exactly as the typology describes. Real launderers adapt.\n"
     )
 
@@ -550,7 +550,7 @@ def write_report(results: dict, report_path: Path):
 
 def print_summary(results: dict):
     print("\n" + "=" * 70)
-    print("PAPERTRAIL DETECTION EVALUATION — SCORECARD")
+    print("PAPERTRAIL DETECTION EVALUATION - SCORECARD")
     print("=" * 70)
     print(f"{'Typology':<25} {'TP':>3} {'FP':>4} {'FN':>3}  {'Prec':>6} {'Rec':>6} {'F1':>6}")
     print("-" * 70)
@@ -592,7 +592,7 @@ def print_summary(results: dict):
     if not s["flagged_known_fp"]:
         print("\nSANCTIONS: Correctly distinguished TP (CP-SANCTIONS-00) from FP (CP-SANCTIONS-01)")
     else:
-        print("\nSANCTIONS: WARNING — flagged known false positive CP-SANCTIONS-01")
+        print("\nSANCTIONS: WARNING - flagged known false positive CP-SANCTIONS-01")
 
     print(f"\nReport written to: {REPORT_PATH}")
 
@@ -614,7 +614,7 @@ def main():
         print(f"ERROR: ground truth not found at {GROUND_TRUTH_PATH}", file=sys.stderr)
         sys.exit(1)
 
-    print("Loading ground truth (local only — never touches Snowflake) ...")
+    print("Loading ground truth (local only - never touches Snowflake) ...")
     gt = load_ground_truth(GROUND_TRUTH_PATH)
     for typ, info in gt.items():
         print(f"  {typ}: {len(info['positives'])} positives, {len(info['known_fp'])} known FP")
