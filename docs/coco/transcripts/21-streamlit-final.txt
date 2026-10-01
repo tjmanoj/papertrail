@@ -1,0 +1,4 @@
+I'll write both files now.Done.
+
+- `streamlit/papertrail_app.py` — 591 lines
+- `streamlit/environment.yml` — 8 lines

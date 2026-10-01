@@ -1,0 +1,8 @@
+Deploying the Streamlit app to Snowflake now.Stage created. Uploading both files.No `snow` CLI available. Using SQL PUT instead.Both files uploaded. Creating the Streamlit object.App is live. Now writing the idempotent SQL file and suspending the warehouse.Warehouse was already suspended (auto-suspend kicked in). All done:
+
+- **Stage:** `PAPERTRAIL.GOLD.STREAMLIT_STAGE` — both files uploaded
+- **Streamlit object:** `PAPERTRAIL.GOLD.PAPERTRAIL_APP` created successfully
+- **url_id:** `b2tpq3cpldkfuv6httf2`
+- **Snowsight URL pattern:** `https://<your-account>.snowflakecomputing.com/#/streamlit-apps/PAPERTRAIL.GOLD.PAPERTRAIL_APP` (or use the url_id directly)
+- **SQL file:** `sql/11-streamlit.sql` written
+- **Warehouse:** already suspended
