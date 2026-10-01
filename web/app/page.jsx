@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import snapshot from '../data/snapshot.json';
 import { summarise } from '../lib/agent';
+import { Markdown } from '../lib/md';
 
 /* ------------------------------------------------------------------ *
  * Analysis that isn't in the database: why each divergence happened.
@@ -202,7 +203,7 @@ function Ask() {
               ))}
             </div>
           )}
-          <div style={{ whiteSpace: 'pre-wrap' }}>{sample.answer}</div>
+          <Markdown text={sample.answer} />
           {sample.sql && (
             <details>
               <summary>Generated SQL</summary>
@@ -226,7 +227,7 @@ function Ask() {
               ))}
             </div>
           )}
-          <div style={{ whiteSpace: 'pre-wrap' }}>{result.answer}</div>
+          <Markdown text={result.answer} />
           {result.sql && (
             <details>
               <summary>Generated SQL</summary>
