@@ -1266,6 +1266,19 @@ DOCS = [
              "CRITICAL severity alert is generated; (b) adverse media screening returns a hit; "
              "(c) the counterparty requests a material change to their account structure; "
              "(d) a sanctions screening result moves from NO_MATCH to PENDING_REVIEW or above."),
+            ("4.1", "KYC Documentation Completeness",
+             "A KYC file is considered complete only when it contains: certified identity "
+             "documents, proof of address dated within 3 months, source-of-funds declaration, "
+             "risk assessment form signed by the reviewing officer, and screening results "
+             "(sanctions, PEP, adverse media). Incomplete files must be escalated to the "
+             "KYC Quality team within 10 business days of identification. Accounts with "
+             "incomplete KYC files for more than 30 calendar days must be restricted."),
+            ("4.3", "Dormancy and KYC Refresh Interaction",
+             "A KYC refresh is not required during the dormancy period if no customer-initiated "
+             "activity occurs. However, upon reactivation of a dormant account, a full KYC "
+             "refresh must be completed before unrestricted transaction processing resumes, "
+             "regardless of when the last scheduled refresh occurred. This applies to all risk "
+             "tiers and is additional to the dormancy reactivation alert requirement."),
         ],
     },
     {
@@ -1314,6 +1327,395 @@ DOCS = [
              "a dormant reactivation alert. The account must be reviewed before further transactions "
              "are permitted. Transactions totalling over $50,000 within 14 days of reactivation "
              "require immediate MLRO notification."),
+        ],
+    },
+    # ── NEW DOCUMENTS (Phase 5a expansion) ───────────────────
+    {
+        "document_id": "DOC-TXN-MONITORING",
+        "document_type": "TXN_MONITORING_STANDARD",
+        "title": "Transaction Monitoring Program Standards",
+        "version": "v2.3",
+        "effective_date": "2024-08-01",
+        "jurisdiction": "AU",
+        "clauses": [
+            ("2.1", "Scope of Monitoring",
+             "All customer-initiated transactions across deposit, lending, and correspondent "
+             "channels shall be subject to automated monitoring. Internal book transfers, "
+             "interest accruals, and fee postings are excluded from typology-based monitoring "
+             "but remain subject to aggregate volume controls. The monitoring universe must be "
+             "reconciled monthly against the general ledger to confirm completeness."),
+            ("2.3", "Threshold Calibration",
+             "Monetary thresholds used in monitoring rules must be reviewed semi-annually and "
+             "recalibrated against transaction volume distributions. The $10,000 AUD reporting "
+             "threshold is statutory and must not be adjusted. Internal thresholds (e.g., "
+             "velocity multiples, dormancy windows) may be tightened but must not be relaxed "
+             "below the levels specified in the AML Policy without MLRO sign-off."),
+            ("3.1", "Real-Time vs Batch Monitoring",
+             "Wire transfers exceeding $25,000 AUD must be screened in real time before release. "
+             "All other transaction types may be monitored in batch with a maximum processing "
+             "delay of 4 hours from settlement. Batch monitoring jobs that fail to complete "
+             "within the 4-hour window must generate an operational alert to the compliance "
+             "technology team."),
+            ("3.4", "Cross-Channel Aggregation",
+             "The monitoring system must aggregate transaction values across all accounts held "
+             "by the same counterparty when evaluating thresholds. A counterparty depositing "
+             "$4,500 into each of three accounts in the same day must trigger the same "
+             "structuring evaluation as a single $13,500 deposit. The counterparty_exposure_usd "
+             "metric provides the aggregation baseline for concentration monitoring."),
+            ("4.1", "Alert Generation Standards",
+             "Each generated alert must capture: the rule that fired, the triggering transactions "
+             "with amounts and dates, the counterparty identifier, the risk rating at the time "
+             "of trigger, and a machine-generated narrative summarising the suspicious pattern. "
+             "Alerts must be assigned a severity (LOW, MEDIUM, HIGH, CRITICAL) based on the "
+             "rule configuration and the counterparty's current risk rating."),
+            ("4.3", "Alert Deduplication",
+             "When multiple rules fire on overlapping transactions for the same counterparty "
+             "within a 48-hour window, the system shall consolidate into a single alert at "
+             "the highest applicable severity. Deduplication must not suppress alerts of "
+             "different typology categories: a structuring alert and a velocity alert on the "
+             "same counterparty must remain separate even if transactions overlap."),
+            ("5.1", "Dormancy Monitoring Intervals",
+             "Dormancy monitoring operates on two distinct intervals. Accounts with no "
+             "customer-initiated activity for 6 months are classified as INACTIVE and subject "
+             "to reduced monitoring. Accounts inactive for 12 or more months are classified as "
+             "DORMANT and any subsequent activity triggers a reactivation alert per the "
+             "Correspondent Banking guidance §3.1. INACTIVE accounts receiving high-value "
+             "transactions (above $20,000) must also trigger an alert even before reaching "
+             "DORMANT status."),
+            ("5.4", "Velocity Spike Calibration",
+             "The velocity monitoring rule compares the current month's transaction count to the "
+             "trailing 6-month average. The default multiplier is 5x. For BUSINESS-type accounts "
+             "with established seasonal patterns (documented during onboarding or KYC review), "
+             "the multiplier may be raised to 8x with documented justification. The multiplier "
+             "must never exceed 10x regardless of account type."),
+            ("6.1", "Model Validation Frequency",
+             "All statistical models and rule-based scenarios used in transaction monitoring "
+             "must be independently validated at least annually. Validation must include "
+             "above-the-line testing (does the model detect known typologies?) and below-the-line "
+             "testing (does the model generate excessive false positives?). The alert closure "
+             "rate metric from AML Policy §7.3 serves as the primary efficiency indicator."),
+            ("7.1", "Reporting to Board",
+             "The Head of Financial Crime must present a quarterly transaction monitoring report "
+             "to the Board Risk Committee covering: total alerts generated by typology, "
+             "alert closure rate, average days_to_case_resolution, SAR filing rate, and any "
+             "material changes to monitoring scenarios. Significant deterioration in any metric "
+             "must be reported within 5 business days of detection, not deferred to the "
+             "quarterly cycle."),
+            ("7.4", "Regulatory Reporting Deadlines",
+             "Threshold transaction reports (TTRs) for cash transactions at or above $10,000 AUD "
+             "must be submitted to AUSTRAC within 10 business days of the transaction. International "
+             "funds transfer instructions (IFTIs) must be reported within 10 business days. These "
+             "deadlines are distinct from the 72-hour STR filing deadline and the 24-hour sanctions "
+             "reporting obligation. Failure to meet any reporting deadline must be logged as a "
+             "compliance breach."),
+            ("8.1", "Structuring Pattern Variants",
+             "In addition to the standard structuring pattern (multiple transactions below $10,000), "
+             "the monitoring system must detect: (a) round-number structuring — deposits consistently "
+             "at $9,000 or $9,500; (b) sequential structuring — deposits at increasing amounts across "
+             "consecutive days; (c) smurfing — multiple individuals depositing to the same account on "
+             "the same day. Each variant triggers the same structuring alert but is tagged with the "
+             "specific sub-pattern for investigation guidance."),
+        ],
+    },
+    {
+        "document_id": "DOC-PEP-HANDLING",
+        "document_type": "PEP_PROCEDURE",
+        "title": "Politically Exposed Persons Handling Procedure",
+        "version": "v1.5",
+        "effective_date": "2024-05-15",
+        "jurisdiction": "AU",
+        "clauses": [
+            ("2.1", "PEP Identification",
+             "All counterparties must be screened against PEP databases at onboarding and at "
+             "each KYC refresh. PEP status extends to immediate family members and known close "
+             "associates. The screening must cover domestic PEPs (Australian government officials "
+             "at federal and state level), foreign PEPs, and international organisation PEPs. "
+             "PEP screening must not be limited to sanctions list matching; dedicated PEP "
+             "databases must be maintained separately."),
+            ("2.4", "PEP Risk Classification",
+             "All identified PEPs must be classified as HIGH risk minimum, regardless of the "
+             "standard risk assessment outcome. Foreign PEPs from jurisdictions rated HIGH or "
+             "VERY_HIGH on the FATF mutual evaluation must be classified VERY_HIGH. The "
+             "high_risk_counterparty_count metric includes PEP-classified counterparties. "
+             "A counterparty's PEP status may only be downgraded after a 24-month cooling-off "
+             "period following departure from the public role."),
+            ("3.1", "Enhanced Monitoring for PEPs",
+             "PEP accounts are subject to enhanced transaction monitoring with reduced thresholds: "
+             "the structuring detection window is lowered from $8,000–$9,999 to $5,000–$9,999, "
+             "and the velocity multiplier is reduced from 5x to 3x. All wire transfers by PEP "
+             "counterparties exceeding $15,000 require pre-release review by a senior analyst. "
+             "These thresholds apply to aggregate activity across all accounts held by the PEP."),
+            ("3.4", "PEP Transaction Reporting",
+             "Transactions by PEP counterparties exceeding $50,000 in aggregate within any "
+             "calendar month must be reported to the MLRO within 3 business days of month-end, "
+             "regardless of whether an alert was triggered. This reporting obligation is "
+             "independent of the STR filing requirements and serves as an additional oversight "
+             "layer for high-profile relationships."),
+            ("4.1", "Senior Management Approval",
+             "Onboarding a new PEP relationship requires written approval from the Chief "
+             "Compliance Officer or their delegate. The approval must document: the source of "
+             "the PEP's wealth, the expected transaction profile, the business rationale for "
+             "the relationship, and any jurisdictional risk factors. Approval must be renewed "
+             "annually as part of the KYC refresh cycle."),
+            ("5.1", "PEP Exit Criteria",
+             "A PEP relationship must be exited if: (a) two or more SARs have been filed in "
+             "any 12-month period; (b) the counterparty refuses to provide source-of-wealth "
+             "documentation requested during KYC refresh; (c) the counterparty's jurisdiction "
+             "is added to a sanctions or embargo list. Exit must be completed within 90 calendar "
+             "days and all open alerts must be resolved before account closure."),
+            ("6.1", "PEP Dormancy Rules",
+             "PEP accounts that become dormant are subject to stricter controls than standard "
+             "dormant accounts. The dormancy classification period for PEP accounts is reduced "
+             "from 12 months to 6 months of inactivity. Any reactivation of a dormant PEP "
+             "account must be approved by a senior compliance officer before the first transaction "
+             "is processed, regardless of transaction amount. This is stricter than the general "
+             "dormant reactivation requirements in the Correspondent Banking guidance §3.1."),
+            ("6.4", "PEP Alert Handling Priority",
+             "All alerts generated on PEP counterparties must be classified as URGENT minimum "
+             "priority, regardless of the alert severity assigned by the monitoring system. PEP "
+             "alerts must be triaged within 4 hours rather than the standard 24-hour triage window. "
+             "The alert ageing tolerance for PEP alerts is 15 calendar days, half the standard "
+             "30-day tolerance defined in the Risk Appetite Statement §3.1."),
+        ],
+    },
+    {
+        "document_id": "DOC-EDD-STANDARD",
+        "document_type": "EDD_STANDARD",
+        "title": "Enhanced Due Diligence Standard",
+        "version": "v2.0",
+        "effective_date": "2024-10-01",
+        "jurisdiction": "AU",
+        "clauses": [
+            ("2.1", "EDD Trigger Events",
+             "Enhanced due diligence must be initiated when: (a) the counterparty is rated HIGH "
+             "or VERY_HIGH risk; (b) the counterparty operates in or remits funds to FATF "
+             "grey-listed or black-listed jurisdictions; (c) two or more alerts of HIGH or "
+             "CRITICAL severity are raised within any rolling 6-month period; (d) the total "
+             "suspicious transaction volume for the counterparty exceeds $100,000 AUD. The "
+             "total_suspicious_transaction_volume_usd metric is the reference measure for "
+             "trigger (d)."),
+            ("2.4", "EDD Documentation Requirements",
+             "EDD files must contain at minimum: certified identity documents, verified "
+             "source-of-funds evidence, business structure diagrams for corporate entities, "
+             "beneficial ownership declarations to the 25% threshold, and a risk narrative "
+             "prepared by a qualified analyst. Incomplete EDD files must generate a compliance "
+             "exception that is tracked to resolution within 30 calendar days."),
+            ("3.1", "Ongoing EDD Monitoring",
+             "Counterparties under EDD are subject to monthly transaction reviews rather than "
+             "the standard automated-only monitoring. The review must compare actual transaction "
+             "patterns against the expected profile documented at onboarding. Deviations "
+             "exceeding 50% of the expected monthly volume or 3x the expected transaction "
+             "count must be escalated as a potential material change requiring KYC refresh "
+             "per KYC Policy §3.1."),
+            ("3.3", "EDD for Dormant High-Risk Accounts",
+             "HIGH or VERY_HIGH risk accounts that become dormant require EDD review before "
+             "reactivation, in addition to the standard dormant reactivation alert. The EDD "
+             "review must confirm that the counterparty's risk profile has not materially "
+             "changed during the dormancy period and must be completed within 5 business days "
+             "of the reactivation request. Transactions must not be processed until the EDD "
+             "review is complete."),
+            ("4.1", "Jurisdictional Risk Assessment",
+             "The bank maintains a tiered jurisdictional risk model: Tier 1 (LOW) — FATF "
+             "members with satisfactory mutual evaluations; Tier 2 (MEDIUM) — non-FATF members "
+             "with cooperative information-sharing agreements; Tier 3 (HIGH) — FATF grey-listed "
+             "jurisdictions; Tier 4 (VERY_HIGH) — FATF black-listed or sanctioned jurisdictions. "
+             "All transactions involving Tier 3 or Tier 4 jurisdictions must be pre-screened "
+             "regardless of amount."),
+            ("4.4", "Concentration Risk in High-Risk Jurisdictions",
+             "Aggregate exposure to counterparties domiciled in Tier 3 or Tier 4 jurisdictions "
+             "must not exceed 2% of total customer deposits. This is stricter than the general "
+             "5% per-counterparty concentration limit in the Risk Appetite Statement §2.4 and "
+             "is measured as a portfolio-level control. Breaches must be reported to the Board "
+             "within 24 hours."),
+            ("5.1", "EDD Review Cycle",
+             "EDD counterparties must be reviewed every 6 months, rather than the standard "
+             "annual KYC cycle for HIGH risk. The review must be documented and signed off by "
+             "a senior compliance officer. If two consecutive EDD reviews identify no concerns, "
+             "the counterparty may be proposed for standard HIGH-risk monitoring, subject to "
+             "MLRO approval."),
+            ("6.1", "Third-Party Reliance Restrictions",
+             "The bank may not rely on third-party due diligence for counterparties requiring "
+             "EDD. All identity verification, source-of-funds checks, and beneficial ownership "
+             "investigations must be conducted directly by the bank's compliance team. "
+             "Third-party screening results (sanctions, PEP, adverse media) may be used as "
+             "inputs but do not satisfy the EDD documentation requirements independently."),
+            ("7.1", "Threshold Amounts for EDD Escalation",
+             "Single transactions exceeding $75,000 AUD by EDD-subject counterparties must be "
+             "pre-approved by a senior compliance officer before processing. Aggregate weekly "
+             "transactions exceeding $150,000 AUD must trigger an immediate EDD progress review. "
+             "These thresholds are independent of the general $25,000 real-time screening "
+             "threshold in the Transaction Monitoring Standards and the $50,000 dormancy "
+             "reactivation threshold in the Correspondent Banking guidance."),
+            ("7.4", "EDD Counterparty Reporting",
+             "A monthly EDD portfolio report must be submitted to the MLRO within 5 business "
+             "days of month-end. The report must include: total EDD counterparties by risk tier, "
+             "new EDD initiations, completed reviews, overdue reviews, and the aggregate "
+             "counterparty_exposure_usd for the EDD portfolio. This reporting obligation is "
+             "separate from the quarterly board report under Transaction Monitoring Standards §7.1 "
+             "and the PEP transaction reporting under PEP Handling §3.4."),
+        ],
+    },
+    {
+        "document_id": "DOC-RECORD-RETENTION",
+        "document_type": "RECORD_RETENTION_POLICY",
+        "title": "Record-Keeping and Retention Policy — Financial Crime",
+        "version": "v3.0",
+        "effective_date": "2024-02-01",
+        "jurisdiction": "AU",
+        "clauses": [
+            ("2.1", "Statutory Retention Periods",
+             "All transaction records must be retained for a minimum of 7 years from the date "
+             "of the transaction, as required by the AML/CTF Act 2006 Part 12. KYC and CDD "
+             "records must be retained for 7 years after the termination of the business "
+             "relationship. Records related to SAR filings must be retained for 10 years from "
+             "the date of filing."),
+            ("2.3", "Alert and Investigation Records",
+             "All alert records, including the triggering rule, transaction details, analyst "
+             "notes, and disposition, must be retained for the greater of: (a) 7 years from "
+             "alert generation; or (b) 3 years after the closure of any associated investigation "
+             "case. The days_to_case_resolution metric and all supporting evidence must be "
+             "preserved as part of the investigation record."),
+            ("3.1", "Retrieval Standards",
+             "Records must be retrievable within 3 business days of a regulatory request. "
+             "AUSTRAC compliance examinations typically require production within 24 hours for "
+             "urgent matters. The bank must maintain indexing that supports retrieval by "
+             "counterparty, account, transaction date range, alert identifier, and case "
+             "identifier. Full-text search capability over investigation narratives is "
+             "recommended but not mandatory."),
+            ("3.4", "Data Integrity Controls",
+             "Retained records must be protected against unauthorised modification. All "
+             "amendments to investigation records must be tracked with a full audit trail "
+             "showing the original value, the modified value, the identity of the modifier, "
+             "and the timestamp and reason for modification. Deletion of records within the "
+             "retention period is prohibited except by court order."),
+            ("4.1", "Reporting Deadline Records",
+             "The bank must maintain a log of all regulatory reporting deadlines and actual "
+             "submission timestamps. For STR filings, the 72-hour deadline from suspicion "
+             "formation must be documented with the exact time suspicion was formed, the "
+             "time the STR was submitted to AUSTRAC, and any justification for delay. For "
+             "sanctions matches, the 24-hour reporting deadline to AUSTRAC must be similarly "
+             "documented."),
+            ("5.1", "Disposal Procedures",
+             "Records that have exceeded their mandatory retention period may be disposed of "
+             "only after confirmation that: (a) no open investigation references the record; "
+             "(b) no pending or anticipated regulatory examination requires the record; "
+             "(c) disposal is approved by the Records Management Officer. Disposal must be "
+             "documented in the retention schedule log and is irreversible."),
+            ("5.4", "Cross-Border Record Obligations",
+             "When transactions involve counterparties in multiple jurisdictions, the longer "
+             "retention period applies. Records relating to correspondent banking relationships "
+             "must follow the retention requirements of both the home jurisdiction and the "
+             "correspondent's jurisdiction. EU GDPR right-to-erasure requests do not override "
+             "AML/CTF retention obligations."),
+            ("6.1", "Dormant Account Records",
+             "Records for dormant accounts must be retained for the full statutory period from "
+             "the date of the last customer-initiated transaction, not from the date the account "
+             "was classified as dormant. If a dormant account is reactivated, the retention clock "
+             "resets to the date of the most recent transaction after reactivation. This ensures "
+             "that dormancy patterns spanning multiple years remain available for investigation."),
+            ("6.3", "SAR Supporting Documentation",
+             "All documentation supporting a SAR filing must be maintained separately from the "
+             "general investigation file and subject to the extended 10-year retention period. "
+             "This includes: the analyst's suspicion formation notes, the MLRO's review and "
+             "approval, the submitted STR form, any AUSTRAC acknowledgment, and all transaction "
+             "records referenced in the filing. The total_suspicious_transaction_volume_usd "
+             "calculation used in the filing must be preserved with its component transactions."),
+        ],
+    },
+    {
+        "document_id": "DOC-ALERT-HANDBOOK",
+        "document_type": "INVESTIGATION_HANDBOOK",
+        "title": "Alert Investigation Handbook",
+        "version": "v2.1",
+        "effective_date": "2024-11-01",
+        "jurisdiction": "AU",
+        "clauses": [
+            ("2.1", "Alert Triage Process",
+             "All alerts must be triaged within 24 hours of generation. Triage assigns an "
+             "initial priority (ROUTINE, URGENT, CRITICAL) and determines whether the alert "
+             "requires full investigation or can be resolved at triage. CRITICAL alerts must "
+             "be assigned to a senior analyst immediately. URGENT alerts must be assigned "
+             "within 4 hours. ROUTINE alerts must be assigned within 24 hours. Unassigned "
+             "alerts older than 24 hours contribute to the alert ageing metric."),
+            ("2.3", "Triage Disposition Standards",
+             "An alert may be closed at triage (without full investigation) only if: (a) the "
+             "triggering activity has a documented legitimate explanation on file from a prior "
+             "investigation within the last 6 months; (b) the alert severity is LOW or MEDIUM; "
+             "and (c) the counterparty risk rating is LOW. All other alerts must proceed to "
+             "full investigation. Triage closures must be documented with the rationale and "
+             "the reference to the prior investigation."),
+            ("3.1", "Investigation Workflow",
+             "A full investigation follows the sequence: (1) gather all transactions linked to "
+             "the alert; (2) review the counterparty's profile, risk rating, and prior alerts; "
+             "(3) analyse the transaction pattern against known typologies; (4) document "
+             "findings in the investigation narrative; (5) make a disposition recommendation. "
+             "Steps 1-3 must be completed within 10 business days. The entire investigation "
+             "must conclude within the 90-day limit per AML Policy §7.5."),
+            ("3.3", "Escalation to MLRO",
+             "An investigation must be escalated to the MLRO when: (a) the analyst forms a "
+             "suspicion that may require an STR filing; (b) the counterparty is a PEP or has "
+             "a sanctions screening match; (c) the aggregate transaction value under "
+             "investigation exceeds $250,000; (d) the case involves more than 3 counterparties "
+             "or spans more than 2 jurisdictions. MLRO escalation must occur within 48 hours "
+             "of the triggering condition being met."),
+            ("4.1", "Investigation Timeliness Targets",
+             "In addition to the 90-day hard limit (AML Policy §7.5), the bank targets: "
+             "CRITICAL cases resolved within 30 calendar days; URGENT cases within 45 calendar "
+             "days; ROUTINE cases within 60 calendar days. The days_to_case_resolution metric "
+             "is reported against both the hard limit and these soft targets. Cases exceeding "
+             "their soft target must have a documented reason for delay."),
+            ("4.4", "SAR Filing Decision",
+             "A SAR must be filed when the investigation establishes reasonable grounds to "
+             "suspect money laundering, terrorism financing, or other serious financial crime. "
+             "The sar_filing_rate across all investigations is monitored as a quality indicator. "
+             "The filing must occur within 72 hours of forming the suspicion — this is measured "
+             "from the analyst's documented suspicion timestamp, not from the date the alert "
+             "was generated."),
+            ("5.1", "Closure Without SAR",
+             "An investigation may be closed without SAR filing when: the analyst determines "
+             "that the suspicious pattern has a verifiable legitimate explanation. The closure "
+             "narrative must explicitly address each red flag identified during the investigation "
+             "and explain why it does not constitute grounds for suspicion. Closures of cases "
+             "involving transactions over $100,000 require supervisor sign-off."),
+            ("5.4", "Post-Closure Monitoring",
+             "Following case closure (whether by SAR filing or no-action), the counterparty "
+             "must be placed on a 6-month enhanced surveillance list. During this period, any "
+             "new alert of MEDIUM severity or above on the same counterparty must reference the "
+             "prior investigation. Two or more alerts during the post-closure period must trigger "
+             "a new investigation regardless of individual alert severity."),
+            ("6.1", "Analyst Workload Standards",
+             "No analyst may carry more than 25 active investigations simultaneously. The "
+             "compliance operations manager must monitor assignment levels weekly and redistribute "
+             "work when any analyst exceeds 80% capacity. Overloaded queues are a leading "
+             "indicator of alert ageing breaches and must be addressed proactively."),
+            ("6.3", "Quality Assurance Reviews",
+             "A random sample of at least 10% of closed investigations must be reviewed by a "
+             "senior analyst or the MLRO each quarter. QA reviews assess: completeness of the "
+             "investigation narrative, appropriateness of the disposition, timeliness, and "
+             "adherence to typology-specific investigation procedures. QA findings must be "
+             "documented and material deficiencies must trigger re-investigation."),
+            ("7.1", "Typology-Specific Investigation Guides",
+             "Each monitored typology (structuring, round-tripping, velocity spikes, dormancy "
+             "reactivation, mule networks, sanctions evasion) must have a published investigation "
+             "guide specifying: the specific data points to gather, the pattern characteristics "
+             "to confirm, the thresholds that distinguish true positive from false positive, and "
+             "the escalation criteria. Guides must be reviewed annually and updated when typology "
+             "behaviour evolves."),
+            ("7.4", "Dormancy Investigation Considerations",
+             "Investigations triggered by dormant account reactivation require additional steps "
+             "beyond the standard workflow: (a) verify the account holder's current identity and "
+             "contact details; (b) obtain an explanation for the dormancy period; (c) compare the "
+             "reactivation transaction pattern against the account's historical profile before "
+             "dormancy; (d) check whether the counterparty has opened new accounts during the "
+             "dormancy period. The $50,000 aggregate threshold from the Correspondent Banking "
+             "guidance §3.1 triggers MLRO notification but does not change investigation priority."),
+            ("8.1", "Threshold Confusion Safeguards",
+             "Analysts must be trained to distinguish between the multiple monetary thresholds "
+             "used across the regulatory framework: $10,000 (statutory reporting), $25,000 "
+             "(real-time wire screening), $50,000 (dormancy reactivation MLRO notification), "
+             "$75,000 (EDD pre-approval), $100,000 (EDD trigger and closure supervisor sign-off), "
+             "$150,000 (EDD weekly review trigger), and $250,000 (MLRO escalation during "
+             "investigation). Incorrect threshold application must be flagged in QA reviews."),
         ],
     },
 ]

@@ -1,0 +1,80 @@
+I'll start by understanding the current search service setup and the regulation data to plan the changes.Now let me check the existing eval queries.Good, I have the full picture. Let me plan and execute this.Here's my plan:
+
+**Enriched search column**: Concatenate `document_title || ' — ' || clause_title || ' (§' || clause_number || ', ' || document_type || '): ' || clause_text`. This gives the embedding model topical context from the document and clause titles.
+
+**Clause role**: I'll derive a `clause_role` attribute from text signals:
+- `DEFINES` — clauses that establish a rule, threshold, or definition (signals: "defined as", "shall maintain", "shall monitor", "must be initiated when", first clause in a document to mention a concept)
+- `REFERENCES` — clauses that mention a rule established elsewhere, typically for record-keeping, reporting, or cross-referencing (signals: "per §", "as required by", "must be retained", "must be documented", "must be logged")
+- `OPERATIONALISES` — clauses that describe how to implement or execute a rule (signals: "must be screened", "must follow", "review must", investigation steps)
+
+This is derived from text patterns, not fitted to the 6 test cases. Let me write the SQL.Good. Now let me deploy this.Service rebuilt. Let me verify the clause_role distribution before testing, and then wait a moment for indexing.The distribution looks reasonable and correctly classifies the key test clauses: DOC-RECORD-RETENTION-4-1 → REFERENCES, DOC-SANCTIONS-PROC-4-1 → DEFINES, DOC-AML-POLICY-5-2 → DEFINES, DOC-TXN-MONITORING-8-1 → OPERATIONALISES.Here are my 6 additional queries with reasoning:
+
+| # | Query | Expected clause | Reasoning |
+|---|-------|----------------|-----------|
+| 7 | "What is the maximum number of active investigations an analyst can carry?" | DOC-ALERT-HANDBOOK-6-1 | Only clause that sets the 25-investigation cap |
+| 8 | "When must a counterparty undergo enhanced due diligence?" | DOC-EDD-STANDARD-2-1 | Canonical trigger list for EDD; other EDD clauses operationalise it |
+| 9 | "How long must transaction records be retained?" | DOC-RECORD-RETENTION-2-1 | Sets the 7-year statutory period; other clauses reference it |
+| 10 | "What defines a velocity spike alert?" | DOC-AML-POLICY-8-1 | The AML Policy clause that establishes the 5x multiplier definition |
+| 11 | "What is the concentration limit for a single counterparty?" | DOC-RISK-APPETITE-2-4 | The 5% limit; other clauses reference this for context |
+| 12 | "How are PEP accounts handled when they become dormant?" | DOC-PEP-HANDLING-6-1 | PEP-specific dormancy rules (6-month vs 12-month) |
+
+Now let me check the service is ready, then run all 12 queries.Service is ACTIVE with 72 rows indexed. Now let me run all 12 eval queries.I'll run all 12 queries in parallel, requesting top-3 results for each.All results are in. Let me compile and suspend the warehouse.Warehouse is already suspended (AUTO_SUSPEND = 60 did its job).---
+
+## Results
+
+### Original 6 queries — before / after
+
+| # | Query | Correct clause | BEFORE top-1 | AFTER top-1 | AFTER top-3 |
+|---|-------|---------------|-------------|------------|------------|
+| 1 | How quickly must a confirmed sanctions match be reported? | DOC-SANCTIONS-PROC-4-1 | **DOC-RECORD-RETENTION-4-1** | **DOC-SANCTIONS-PROC-4-1** | Y |
+| 2 | What transaction pattern counts as structuring? | DOC-AML-POLICY-5-2 | **DOC-TXN-MONITORING-8-1** | **DOC-TXN-MONITORING-8-1** | Y |
+| 3 | What is the threshold for filing a suspicious transaction report? | DOC-STR-GUIDANCE-3-1 | DOC-STR-GUIDANCE-3-1 | DOC-STR-GUIDANCE-3-1 | Y |
+| 4 | How often must KYC reviews be conducted for high-risk customers? | DOC-KYC-POLICY-2-1 | DOC-KYC-POLICY-2-1 | DOC-KYC-POLICY-2-1 | Y |
+| 5 | What is the maximum time allowed to resolve an investigation case? | DOC-AML-POLICY-7-5 | DOC-AML-POLICY-7-5 | DOC-AML-POLICY-7-5 | Y |
+| 6 | What triggers a dormant account reactivation alert? | DOC-CORRESPONDENT-3-1 | DOC-CORRESPONDENT-3-1 | DOC-CORRESPONDENT-3-1 | Y |
+
+**Original 6: top-1 improved from 4/6 → 5/6. Top-3 stays 6/6.**
+
+Q1 (sanctions) is fixed — "Sanctions Screening Operational Procedure" in the search text now pushes the correct clause above the record-keeping clause. Q2 (structuring) remains a miss at top-1: DOC-TXN-MONITORING-8-1 "Structuring Pattern Variants" is a genuinely close semantic match for "what pattern counts as structuring" because it enumerates the patterns. The canonical *definition* (DOC-AML-POLICY-5-2) sits at #2. The clause_role attribute distinguishes them (OPERATIONALISES vs DEFINES), which downstream consumers can use for re-ranking, but the search service's built-in ranking still prefers the more detailed pattern description.
+
+### Full 12 queries — after
+
+| # | Query | Correct clause | Top-1 hit | Top-1 | Top-3 |
+|---|-------|---------------|-----------|-------|-------|
+| 1 | Sanctions match reporting deadline | DOC-SANCTIONS-PROC-4-1 | DOC-SANCTIONS-PROC-4-1 | Y | Y |
+| 2 | What counts as structuring | DOC-AML-POLICY-5-2 | DOC-TXN-MONITORING-8-1 | N | Y |
+| 3 | STR filing threshold | DOC-STR-GUIDANCE-3-1 | DOC-STR-GUIDANCE-3-1 | Y | Y |
+| 4 | KYC review frequency for high-risk | DOC-KYC-POLICY-2-1 | DOC-KYC-POLICY-2-1 | Y | Y |
+| 5 | Max investigation resolution time | DOC-AML-POLICY-7-5 | DOC-AML-POLICY-7-5 | Y | Y |
+| 6 | Dormant account reactivation trigger | DOC-CORRESPONDENT-3-1 | DOC-CORRESPONDENT-3-1 | Y | Y |
+| 7 | Max analyst active investigations | DOC-ALERT-HANDBOOK-6-1 | DOC-ALERT-HANDBOOK-6-1 | Y | Y |
+| 8 | EDD trigger conditions | DOC-EDD-STANDARD-2-1 | DOC-EDD-STANDARD-2-1 | Y | Y |
+| 9 | Transaction record retention period | DOC-RECORD-RETENTION-2-1 | DOC-RECORD-RETENTION-2-1 | Y | Y |
+| 10 | Velocity spike alert definition | DOC-AML-POLICY-8-1 | DOC-AML-POLICY-8-1 | Y | Y |
+| 11 | Single counterparty concentration limit | DOC-RISK-APPETITE-2-4 | DOC-RISK-APPETITE-2-4 | Y | Y |
+| 12 | PEP dormant account handling | DOC-PEP-HANDLING-6-1 | DOC-PEP-HANDLING-6-1 | Y | Y |
+
+### Summary
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Original 6 — top-1 | 4/6 (67%) | **5/6 (83%)** |
+| Original 6 — top-3 | 6/6 (100%) | 6/6 (100%) |
+| Full 12 — top-1 | — | **11/12 (92%)** |
+| Full 12 — top-3 | — | **12/12 (100%)** |
+
+### What changed
+
+1. **Enriched search column**: The `ON` column is now `document_title || ' — ' || clause_title || (§clause_number, document_type): || clause_text`. This gives the embedding model visibility into topical context — "Sanctions Screening Operational Procedure" vs "Record-Keeping and Retention Policy" — that was invisible when indexing `clause_text` alone.
+
+2. **clause_role attribute**: A derived column classifying each clause as DEFINES, REFERENCES, or OPERATIONALISES using text-pattern heuristics (26/34/12 distribution). This is available as a filterable attribute for downstream consumers to prefer definitional clauses when appropriate, though the search service's built-in ranking doesn't use it directly.
+
+3. **clause_text preserved as attribute**: The original `clause_text` is now an explicit attribute alongside the enriched `search_text`, so citation/display code can still pull the clean clause body.
+
+### Honest assessment of Q2
+
+The structuring query (Q2) remains a top-1 miss. This is a genuinely hard case: DOC-TXN-MONITORING-8-1 lists *specific structuring patterns* (round-number, sequential, smurfing), which is a very strong semantic match for "what pattern counts as structuring." The canonical *definition* in DOC-AML-POLICY-5-2 is more abstract. The clause_role distinction (OPERATIONALISES vs DEFINES) provides the signal for a caller to re-rank, but pushing this into the search service's own ranking would require a scoring profile or a filtered query, not a change to the indexed text.
+
+Warehouse is suspended (auto-suspend = 60s).Now logging this session.That got inserted at the wrong spot. Let me fix it — it should be at the end of the file.The edit already placed the new entry. Let me check the end of the file to see if it landed correctly at the end too.The new session entry is at the end (lines ~397-426). But there's a duplicate at lines 3-30 as well. Let me remove the duplicate at the top.Good — the Phase 1 entry was already there from before. The edit just inserted the new session entry right before it. Let me check if the new entry is at line 3 as a duplicate or just at the end.The new entry is correctly appended at lines 401-425 after the previous entry. The file looks right — no duplicate at the top.
+
+Done. `sql/07-search.sql` is updated and the service is deployed. The warehouse is suspended.

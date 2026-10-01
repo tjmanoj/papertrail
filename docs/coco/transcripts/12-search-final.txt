@@ -1,0 +1,63 @@
+I'll start by reading the current project state to understand what exists, then work through each step.Good — 11 PDFs confirmed, 11 documents and 72 clauses in the CSVs. Starting with the reload.
+
+**Step 1: Reload the two regulatory tables.** I'll PUT the updated CSVs, then TRUNCATE + COPY.Now TRUNCATE + COPY both tables.11 documents and 72 clauses loaded. Confirming counts.**Step 2: PDF ingestion.** Creating the stage, uploading 11 PDFs, and running AI_PARSE_DOCUMENT.Now PUT all 11 PDFs.All 11 PDFs uploaded. Now I need to check the AI_PARSE_DOCUMENT syntax before proceeding. Let me look up the current API.Good — the syntax is `AI_PARSE_DOCUMENT(TO_FILE('@stage','file.pdf'), {'mode':'LAYOUT'})`. Now I'll create the parsed-output table and process all 11 PDFs.All 11 PDFs on stage. Now running AI_PARSE_DOCUMENT across all files and inserting into the parsed table.Let me test AI_PARSE_DOCUMENT on a single file first to debug the issue.OCR mode returns a flat `content` field, not a pages array. I'll simplify the insert.11 parsed documents inserted. Let me verify and compare parsed text vs clause text.AI_PARSE_DOCUMENT successfully extracted text from all 11 PDFs. The parsed text is 103-127% the length of the CSV full_text — the extra characters come from the PDF title pages, headers, and formatting that the OCR picks up beyond the clause body text. This proves the system can ingest a PDF directly.**Step 3: Create Cortex Search Service.** I need to check the current syntax for CREATE CORTEX SEARCH SERVICE.I have the syntax. Now creating the Cortex Search Service over the clause corpus. I'll join the clause table with the document table to get the document title, type, and jurisdiction as attributes.Search service created. Let me verify it's populated.72 clauses indexed. Now for the precision test.**Step 4: Retrieval precision test.** Running all 6 queries.All 6 queries returned. Let me now compile the precision analysis.**Step 5: Write sql/07-search.sql.** Now I'll compose the idempotent DDL file.Already suspended (auto-suspend caught it). That's fine.---
+
+## Report
+
+### 1. Data Load Confirmation
+
+| Table | Rows |
+|---|---|
+| `RAW.REGULATORY_DOCUMENT` | **11** |
+| `RAW.REGULATORY_DOCUMENT_CLAUSE` | **72** |
+
+Both TRUNCATE + COPY clean. No errors.
+
+### 2. AI_PARSE_DOCUMENT Results
+
+All 11 PDFs uploaded to `@PAPERTRAIL.RAW.REGULATORY_PDF_STAGE`, parsed with OCR mode, and persisted to `RAW.REGULATORY_DOCUMENT_PARSED`.
+
+| Document | Pages | Parsed Text Len | CSV Full Text Len | % of CSV |
+|---|---|---|---|---|
+| DOC-ALERT-HANDBOOK | 4 | 6,109 | 5,932 | 103% |
+| DOC-AML-POLICY | 2 | 2,316 | 2,111 | 110% |
+| DOC-CORRESPONDENT | 1 | 957 | 756 | 127% |
+| DOC-EDD-STANDARD | 3 | 4,606 | 4,431 | 104% |
+| DOC-KYC-POLICY | 2 | 1,926 | 1,748 | 110% |
+| DOC-PEP-HANDLING | 3 | 3,681 | 3,491 | 105% |
+| DOC-RECORD-RETENTION | 3 | 3,973 | 3,766 | 106% |
+| DOC-RISK-APPETITE | 1 | 1,306 | 1,096 | 119% |
+| DOC-SANCTIONS-PROC | 1 | 1,171 | 975 | 120% |
+| DOC-STR-GUIDANCE | 2 | 1,440 | 1,247 | 116% |
+| DOC-TXN-MONITORING | 4 | 5,414 | 5,222 | 104% |
+
+Parsed text is 103-127% of CSV text — the surplus is PDF title/header content, watermarks, and metadata lines that the OCR extracts beyond clause bodies. This proves the system can ingest a raw PDF and recover the same regulatory content.
+
+### 3. Cortex Search Service
+
+`PAPERTRAIL.GOLD.REGULATION_SEARCH` — 72 clauses indexed. Config:
+- **Search column:** `clause_text`
+- **Primary key:** `clause_id`
+- **Attributes (filterable):** `document_title`, `document_type`, `clause_number`, `clause_title`, `jurisdiction`
+- **Embedding model:** `snowflake-arctic-embed-l-v2.0`
+- **Target lag:** 1 day
+- **Warehouse:** `PAPERTRAIL_WH` (XS)
+
+### 4. Retrieval Precision — Full Results
+
+| # | Query | Top Hit | Clause | Document | Correct? |
+|---|---|---|---|---|---|
+| **(a)** | How quickly must a confirmed sanctions match be reported? | `DOC-RECORD-RETENTION-4-1` §4.1 Reporting Deadline Records | Mentions the 24h deadline in record-keeping context | Record-Keeping and Retention Policy | **NO** — correct clause is `DOC-SANCTIONS-PROC-4-1` at rank 2 |
+| **(b)** | What is the deadline for filing a suspicious transaction report? | `DOC-STR-GUIDANCE-3-1` §3.1 Filing Thresholds | "filed with AUSTRAC within 72 hours" | STR Filing Guidance | **YES** |
+| **(c)** | What transaction pattern counts as structuring? | `DOC-TXN-MONITORING-8-1` §8.1 Structuring Pattern Variants | Describes variants (round-number, sequential, smurfing) | Txn Monitoring Standards | **DEBATABLE** — this is about variants; the canonical definition is `DOC-AML-POLICY-5-2` at rank 2 |
+| **(d)** | When does an account count as dormant? | `DOC-TXN-MONITORING-5-1` §5.1 Dormancy Monitoring Intervals | "Accounts inactive for 12 or more months are classified as DORMANT" | Txn Monitoring Standards | **YES** |
+| **(e)** | What is the maximum permitted exposure to a single counterparty? | `DOC-RISK-APPETITE-2-4` §2.4 Concentration Limits | "No single counterparty's net exposure shall exceed 5%" | Board Risk Appetite Statement | **YES** |
+| **(f)** | How long must we retain investigation records? | `DOC-RECORD-RETENTION-2-3` §2.3 Alert and Investigation Records | "7 years from alert generation; or 3 years after closure" | Record-Keeping and Retention Policy | **YES** |
+
+**Top-1 precision: 4/6 strict, 5/6 generous.**
+
+Honest assessment: Queries (a) and (c) expose the confusable-neighbour problem. For (a), the retention policy's record-keeping clause mentions the same 24h deadline as the operational sanctions clause, and the search ranks the record-keeping one higher because "reported" and "reporting deadline records" overlap lexically. For (c), the variants clause ranks above the definition clause because it has more lexical overlap with "pattern." In both cases the correct clause is at rank 2, so a top-3 retrieval would capture all 6 correctly.
+
+### 5. DDL
+
+Written to `sql/07-search.sql` — idempotent, covers the PDF stage, the parsed-document table, and the Cortex Search Service. Warehouse is suspended (auto-suspend caught it at 60s).
