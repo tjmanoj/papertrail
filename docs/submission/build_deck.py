@@ -64,6 +64,11 @@ def write(tf, blocks, *, size=12, color=INK2, bold=False, align=PP_ALIGN.LEFT,
             r.font.size = Pt(ov.get("size", size))
             r.font.bold = ov.get("bold", bold)
             r.font.color.rgb = ov.get("color", color)
+            if ov.get("link"):
+                r.hyperlink.address = ov["link"]
+                # keep our own colour; PowerPoint would otherwise force theme blue
+                r.font.color.rgb = ov.get("color", color)
+                r.font.underline = ov.get("underline", False)
 
 
 def textbox(slide, l, t, w, h):
@@ -162,7 +167,7 @@ tiles = [("TODAY",
           "Ask two analysts the same question and they compute it differently. Booking or "
           "value date. Reversals in or out."),
          ("THE USER",
-          "A compliance analyst or MLRO at a mid size bank, who has to put their name on "
+          "A compliance analyst or MLRO at a mid-sized bank who has to put their name on "
           "the number.")]
 g = 210000
 tw = (BODY_W - 2 * g) // 3
@@ -184,8 +189,8 @@ write(card(sl, MARGIN, y, BODY_W, ch, fill=SOFT).text_frame,
 # ============================================================ 3 architecture
 sl = S[1]
 y = heading(sl, "Architecture",
-            "Snowflake native end to end. No LangChain, no external vector store, "
-            "no third party LLM API.")
+            "Snowflake-native, end to end. No LangChain, no external vector store, "
+            "no third-party LLM API.")
 
 BH = 380000
 cgap = 320000
@@ -242,7 +247,7 @@ for i, (nm, ds) in enumerate(skills):
 
 # ============================================================= 4 measurement
 sl = S[2]
-y = heading(sl, "We measured what others assert",
+y = heading(sl, "Measured, not asserted",
             "Governed against ungoverned. Same data, same model, full raw DDL, "
             "no hint of any governance rule.")
 
@@ -251,7 +256,7 @@ lead = ("An ungoverned model is not inconsistent. Across 25 runs the SQL was byt
 lh = est_height(lead, 12, BODY_W - 400000) + 60000
 c = card(sl, MARGIN, y, BODY_W, lh, fill=RGBColor(0xFB, 0xEC, 0xEC),
          border=RGBColor(0xE8, 0xC8, 0xC8))
-write(c.text_frame, [[("Our hypothesis was wrong.  ", {"bold": True, "color": CRIT}),
+write(c.text_frame, [[("Our hypothesis was wrong. ", {"bold": True, "color": CRIT}),
                       (lead, {"color": INK})]], size=12, space=0)
 y += lh + 300000
 
@@ -281,7 +286,7 @@ for label, u, gv, v, col in rows:
     y += 285000
 
 y += 90000
-foot = ("The overstatement comes from four missed decisions at once: booking date rather than "
+foot = ("The $4.5M overstatement comes from four missed decisions at once: booking date rather than "
         "value date, reversals counted, unsettled counted, and transactions on already closed "
         "alerts treated as suspicious. Exposure agrees only by coincidence, because that "
         "counterparty has no beneficial ownership links.")
@@ -312,8 +317,8 @@ panels = [("WHAT IT SAVES",
            "footnote in about 300 ms."),
           ("WHY NOT 100%",
            "Velocity spike detection is weak. Removing it would take precision and F1 to "
-           "1.000. We kept it because the regulation requires it. A perfect score on self "
-           "authored data would be evidence of tuning.")]
+           "1.000. We kept it because the regulation requires it. A perfect score on "
+           "self-authored data would be evidence of tuning.")]
 ph = max(est_height(b, 10.5, hw - 380000) + 330000 for _, b in panels)
 for i, (head, body) in enumerate(panels):
     c = card(sl, MARGIN + i * (hw + pg), y, hw, ph, fill=SOFT)
@@ -322,17 +327,24 @@ for i, (head, body) in enumerate(panels):
                          [(body, {"size": 10.5, "color": INK2})]], space=7)
 y += ph + 250000
 
-lh2 = min(700000, FLOOR - y)
+lh2 = min(760000, FLOOR - y)
 links = card(sl, MARGIN, y, BODY_W, lh2, fill=NAVY, border=None)
+APP = "https://papertrail-provenance.vercel.app"
+REPO = "https://github.com/tjmanoj/papertrail"
+NATIVE = "https://app.snowflake.com/streamlit/inpukmk/at72852/#/apps/ahcfaco22em3htdk4bq2"
 write(links.text_frame,
       [[("Live app    ", {"color": MUTED, "size": 9.5}),
-        ("papertrail-provenance.vercel.app", {"color": CYAN_B, "size": 12.5, "bold": True}),
-        ("    no login required", {"color": MUTED, "size": 9.5})],
+        ("papertrail-provenance.vercel.app",
+         {"color": CYAN_B, "size": 12.5, "bold": True, "link": APP}),
+        ("    opens for anyone, no login", {"color": MUTED, "size": 9.5})],
        [("Repository    ", {"color": MUTED, "size": 9.5}),
-        ("github.com/tjmanoj/papertrail", {"color": WHITE, "size": 10.5}),
-        ("        Native    ", {"color": MUTED, "size": 9.5}),
-        ("Streamlit in Snowflake", {"color": WHITE, "size": 10.5})]],
-      space=3, align=PP_ALIGN.CENTER)
+        ("github.com/tjmanoj/papertrail",
+         {"color": WHITE, "size": 10.5, "link": REPO}),
+        ("        Native app    ", {"color": MUTED, "size": 9.5}),
+        ("Streamlit in Snowflake",
+         {"color": WHITE, "size": 10.5, "link": NATIVE}),
+        ("  login required", {"color": MUTED, "size": 9})]],
+      space=4, align=PP_ALIGN.CENTER)
 
 # --------------------------------------------------------------- final sweep
 for _sl in prs.slides:

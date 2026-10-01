@@ -284,7 +284,7 @@ elif page == "Prove":
 
         rows = run_query("""
             SELECT * FROM PAPERTRAIL.GOVERNANCE.GOVERNANCE_EXPERIMENT
-            ORDER BY QUESTION, PATH, RUN_NUMBER
+            ORDER BY QUESTION_ID, PATH, RUN_NUMBER
         """)
 
         if not rows:
@@ -293,7 +293,7 @@ elif page == "Prove":
             # Build structure: question -> path -> list of runs
             questions = {}
             for r in rows:
-                q = safe_get(r, "QUESTION", "")
+                q = safe_get(r, "QUESTION_TEXT", "") or safe_get(r, "QUESTION_ID", "")
                 p = safe_get(r, "PATH", "")
                 if q not in questions:
                     questions[q] = {}
@@ -543,7 +543,7 @@ elif page == "Evidence":
                 counts[label] = "?"
 
         st.markdown("### Live Counts")
-        c1, c2, c3, c4 = st.columns(4)
+        c1, c2, c3, c4 = st.columns([1.5, 1, 1, 1])
         with c1:
             metric_tile("Transactions", counts["Transactions"])
         with c2:
