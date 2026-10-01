@@ -1,0 +1,273 @@
+{
+  "generatedAt": "2026-10-01T13:51:34.277Z",
+  "experiment": [
+    {
+      "QUESTION_ID": "Q1",
+      "QUESTION_TEXT": "What was the total suspicious transaction volume for Q3 2026?",
+      "PATH": "GOVERNED",
+      "ANSWER": 4295229.27,
+      "RUNS": 3,
+      "DISTINCT_ANSWERS": 1,
+      "ERRORS": 0,
+      "SQL_TEXT": "WITH __fact_transaction AS (SELECT is_alert_linked_active, is_reversal, is_settled, value_date, amount_usd FROM PAPERTRAIL.GOLD.FACT_TRANSACTION) SELECT SUM(CASE WHEN ft.is_alert_linked_active = TRUE AND ft.is_reversal = FALSE AND ft.is_settled = TRUE THEN ft.amount_usd ELSE 0 END) AS total_suspicious_transaction_volume_usd FROM __fact_transaction AS ft WHERE ft.value_date >= '2026-07-01' AND ft.value_date < '2026-10-01'"
+    },
+    {
+      "QUESTION_ID": "Q1",
+      "QUESTION_TEXT": "What was the total suspicious transaction volume for Q3 2026?",
+      "PATH": "UNGOVERNED",
+      "ANSWER": 8797923.12,
+      "RUNS": 5,
+      "DISTINCT_ANSWERS": 1,
+      "ERRORS": 0,
+      "SQL_TEXT": "SELECT\n    SUM(t.AMOUNT_USD) AS TOTAL_SUSPICIOUS_TRANSACTION_VOLUME_USD\nFROM RAW.TRANSACTION t\nJOIN RAW.ACCOUNT a\n    ON t.ACCOUNT_ID = a.ACCOUNT_ID\nWHERE t.TRANSACTION_DATE BETWEEN '2026-07-01' AND '2026-09-30'\n  AND a.COUNTERPARTY_ID IN (\n        SELECT DISTINCT al.COUNTERPARTY_ID\n        FROM RAW.ALERT al\n        WHERE al.ALERT_DATE BETWEEN '2026-07-01' AND '2026-09-30'\n  );"
+    },
+    {
+      "QUESTION_ID": "Q2",
+      "QUESTION_TEXT": "What is our total exposure to counterparty CP-STRUCT-01?",
+      "PATH": "GOVERNED",
+      "ANSWER": 87185.1,
+      "RUNS": 3,
+      "DISTINCT_ANSWERS": 1,
+      "ERRORS": 0,
+      "SQL_TEXT": "WITH __dim_counterparty AS (SELECT counterparty_id, full_legal_name, jurisdiction, risk_rating, resolved_exposure_usd FROM PAPERTRAIL.GOLD.DIM_COUNTERPARTY) SELECT dc.resolved_exposure_usd AS counterparty_exposure_usd FROM __dim_counterparty AS dc WHERE dc.counterparty_id = 'CP-STRUCT-01'"
+    },
+    {
+      "QUESTION_ID": "Q2",
+      "QUESTION_TEXT": "What is our total exposure to counterparty CP-STRUCT-01?",
+      "PATH": "UNGOVERNED",
+      "ANSWER": 87185.1,
+      "RUNS": 5,
+      "DISTINCT_ANSWERS": 1,
+      "ERRORS": 0,
+      "SQL_TEXT": "SELECT\n    cp.COUNTERPARTY_ID,\n    cp.FULL_LEGAL_NAME,\n    SUM(a.AVERAGE_MONTHLY_BALANCE_USD) AS TOTAL_EXPOSURE_USD\nFROM RAW.COUNTERPARTY cp\nJOIN RAW.ACCOUNT a\n    ON a.COUNTERPARTY_ID = cp.COUNTERPARTY_ID\nWHERE cp.COUNTERPARTY_ID = 'CP-STRUCT-01'\nGROUP BY cp.COUNTERPARTY_ID, cp.FULL_LEGAL_NAME;"
+    },
+    {
+      "QUESTION_ID": "Q3",
+      "QUESTION_TEXT": "What was the alert closure rate for 2026?",
+      "PATH": "GOVERNED",
+      "ANSWER": 63.64,
+      "RUNS": 3,
+      "DISTINCT_ANSWERS": 1,
+      "ERRORS": 0,
+      "SQL_TEXT": "WITH __fact_alert AS (SELECT status, alert_date FROM PAPERTRAIL.GOLD.FACT_ALERT) SELECT ROUND(COUNT(CASE WHEN fa.status LIKE 'CLOSED%' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 2) AS alert_closure_rate FROM __fact_alert AS fa WHERE fa.alert_date >= '2026-01-01' AND fa.alert_date < '2027-01-01'"
+    },
+    {
+      "QUESTION_ID": "Q3",
+      "QUESTION_TEXT": "What was the alert closure rate for 2026?",
+      "PATH": "UNGOVERNED",
+      "ANSWER": 0.636364,
+      "RUNS": 5,
+      "DISTINCT_ANSWERS": 1,
+      "ERRORS": 0,
+      "SQL_TEXT": "SELECT\n    COUNT(*) AS TOTAL_ALERTS,\n    COUNT_IF(STATUS IN ('CLOSED_NO_ACTION', 'CLOSED_SAR_FILED')) AS CLOSED_ALERTS,\n    COUNT_IF(STATUS IN ('CLOSED_NO_ACTION', 'CLOSED_SAR_FILED')) / COUNT(*) AS CLOSURE_RATE\nFROM RAW.ALERT\nWHERE YEAR(ALERT_DATE) = 2026;"
+    },
+    {
+      "QUESTION_ID": "Q4",
+      "QUESTION_TEXT": "What share of investigation cases resulted in a SAR filing?",
+      "PATH": "GOVERNED",
+      "ANSWER": 6.45,
+      "RUNS": 3,
+      "DISTINCT_ANSWERS": 1,
+      "ERRORS": 0,
+      "SQL_TEXT": "WITH __fact_case AS (SELECT status FROM PAPERTRAIL.GOLD.FACT_CASE) SELECT ROUND(COUNT(CASE WHEN fc.status = 'SAR_FILED' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 2) AS sar_filing_rate FROM __fact_case AS fc"
+    },
+    {
+      "QUESTION_ID": "Q4",
+      "QUESTION_TEXT": "What share of investigation cases resulted in a SAR filing?",
+      "PATH": "UNGOVERNED",
+      "ANSWER": 0.064516,
+      "RUNS": 5,
+      "DISTINCT_ANSWERS": 1,
+      "ERRORS": 0,
+      "SQL_TEXT": "SELECT\n  COUNT_IF(STATUS = 'SAR_FILED') AS SAR_FILED_CASES,\n  COUNT(*) AS TOTAL_CASES,\n  COUNT_IF(STATUS = 'SAR_FILED') / COUNT(*) AS SAR_FILING_SHARE\nFROM RAW.CASE_INVESTIGATION;"
+    },
+    {
+      "QUESTION_ID": "Q5",
+      "QUESTION_TEXT": "How many high risk counterparties do we have in Singapore?",
+      "PATH": "GOVERNED",
+      "ANSWER": 36,
+      "RUNS": 3,
+      "DISTINCT_ANSWERS": 1,
+      "ERRORS": 0,
+      "SQL_TEXT": "WITH __dim_counterparty AS (SELECT counterparty_id, is_high_risk, jurisdiction FROM PAPERTRAIL.GOLD.DIM_COUNTERPARTY) SELECT COUNT(DISTINCT dc.counterparty_id) AS high_risk_counterparty_count FROM __dim_counterparty AS dc WHERE dc.is_high_risk = TRUE AND dc.jurisdiction = 'SG'"
+    },
+    {
+      "QUESTION_ID": "Q5",
+      "QUESTION_TEXT": "How many high risk counterparties do we have in Singapore?",
+      "PATH": "UNGOVERNED",
+      "ANSWER": 23,
+      "RUNS": 5,
+      "DISTINCT_ANSWERS": 1,
+      "ERRORS": 0,
+      "SQL_TEXT": "SELECT COUNT(*) AS HIGH_RISK_COUNTERPARTY_COUNT\nFROM RAW.COUNTERPARTY\nWHERE RISK_RATING = 'HIGH'\n  AND JURISDICTION = 'SG';"
+    }
+  ],
+  "findings": [
+    {
+      "FINDING_ID": "9646f20a-a251-4ef7-8b4e-a49dbbc0157c",
+      "QUESTION_TEXT": "Does counterparty CP-STRUCT-01 (Structurer-Emma Mitchell) show evidence of transaction structuring, and what is the institution's exposure?",
+      "FINDING_TEXT": "**Formal Regulatory Finding**\n\n**Counterparty CP-STRUCT-01 (Structurer-Emma Mitchell) Transaction Structuring Evidence and Institution Exposure**\n\nThe analysis of transaction data for counterparty CP-STRUCT-01 (Structurer-Emma Mitchell) reveals evidence of potential transaction structuring. The structuring indicator score for this counterparty is 30.23% [1], indicating that 13 out of 43 cash deposits fell within the $8,000-$9,999 structuring band [1]. This pattern of transactions may be indicative of deliberate attempts to avoid the $10,000 AUSTRAC reporting threshold.\n\nThe institution's exposure to this counterparty is $87,185.10 [2], which includes direct exposure plus the balance of active accounts held by corporates where CP-STRUCT-01 is a beneficial owner.\n\n**Regulatory Basis**\n\n* Clause A: S5.2 \"Structuring Detection\" — Anti-Money Laundering and Counter-Terrorism Financing Policy (AML_POLICY, AU)\n* Clause C: S3.4 \"Cross-Channel Aggregation\" — Transaction Monitoring Program Standards (TXN_MONITORING_STANDARD, AU)\n\nNote: While the analysis suggests potential structuring, it does not provide sufficient information to determine if the transactions meet the specific criteria outlined in Clause B: S8.1 \"Structuring Pattern Variants\" — Transaction Monitoring Program Standards (TXN_MONITORING_STANDARD, AU), as the data does not include information on round-number structuring, sequential structuring, or smurfing patterns.",
+      "CONTENT_HASH": "f23927fc369788c933da96cfb380445311dd434669ef411022195965603d73a7",
+      "ANALYST_ROLE": "ACCOUNTADMIN",
+      "ANALYST_JURISDICTION": "AU",
+      "MODEL_USED": "llama3.1-70b",
+      "SUPERSEDES_FINDING_ID": null,
+      "CREATED_AT": "2026-10-01 03:11:34.376"
+    }
+  ],
+  "footnotes": [
+    {
+      "FOOTNOTE_ID": "48d3e6c8-d73e-4713-9952-94c9694c95c7",
+      "FINDING_ID": "9646f20a-a251-4ef7-8b4e-a49dbbc0157c",
+      "FOOTNOTE_NUMBER": 1,
+      "METRIC_NAME": "structuring_indicator_score",
+      "METRIC_DEFINITION": "Percentage of cash deposits that fall in the $8,000-$9,999 structuring band (just below the $10,000 AUSTRAC reporting threshold), scaled 0-100. Denominator is all CASH_DEPOSIT transactions only. Only settled, non-reversal transactions are included.",
+      "GENERATED_SQL": "SELECT ft.COUNTERPARTY_ID, ft.COUNTERPARTY_NAME, COUNT(CASE WHEN ft.TRANSACTION_TYPE = 'CASH_DEPOSIT' THEN 1 END) AS total_cash_deposits, COUNT(CASE WHEN ft.TRANSACTION_TYPE = 'CASH_DEPOSIT' AND ft.AMOUNT_USD BETWEEN 8000 AND 9999 THEN 1 END) AS structuring_band_deposits, ROUND(COUNT(CASE WHEN ft.TRANSACTION_TYPE = 'CASH_DEPOSIT' AND ft.AMOUNT_USD BETWEEN 8000 AND 9999 THEN 1 END) * 100.0 / NULLIF(COUNT(CASE WHEN ft.TRANSACTION_TYPE = 'CASH_DEPOSIT' THEN 1 END), 0), 2) AS structuring_indicator_score FROM PAPERTRAIL.GOLD.FACT_TRANSACTION ft WHERE ft.IS_REVERSAL = FALSE AND ft.IS_SETTLED = TRUE AND ft.COUNTERPARTY_ID = 'CP-STRUCT-01' GROUP BY ft.COUNTERPARTY_ID, ft.COUNTERPARTY_NAME HAVING COUNT(CASE WHEN ft.TRANSACTION_TYPE = 'CASH_DEPOSIT' THEN 1 END) > 0",
+      "RESULT_VALUE": "30.23",
+      "SOURCE_ROW_IDS": [
+        "TX-00229881",
+        "TX-00229891",
+        "TX-00229895",
+        "TX-00229912",
+        "TX-00229938",
+        "TX-00229946",
+        "TX-00229949",
+        "TX-00229954",
+        "TX-00229961",
+        "TX-00229972",
+        "TX-00229974",
+        "TX-00229976",
+        "TX-00230009",
+        "TX-00230025",
+        "TX-00230028",
+        "TX-00230031",
+        "TX-00230049",
+        "TX-00230065",
+        "TX-00230092",
+        "TX-00236067",
+        "TX-00236068",
+        "TX-00236079",
+        "TX-00236080",
+        "TX-00236090",
+        "TX-00236096",
+        "TX-00236108",
+        "TX-00236116",
+        "TX-00236147",
+        "TX-00236160",
+        "TX-00236174",
+        "TX-00240146",
+        "TX-00240147",
+        "TX-00240148",
+        "TX-00240149",
+        "TX-00240150",
+        "TX-00240151",
+        "TX-00240152",
+        "TX-00240153",
+        "TX-00240154",
+        "TX-00240155",
+        "TX-00240156",
+        "TX-00240157",
+        "TX-00240158"
+      ],
+      "SOURCE_TABLE": "PAPERTRAIL.GOLD.FACT_TRANSACTION",
+      "CLAUSE_ID": "DOC-AML-POLICY-5-2",
+      "CLAUSE_NUMBER": "§5.2",
+      "CLAUSE_TEXT_EXCERPT": "The bank shall maintain automated monitoring to detect transaction structuring, defined as patterns of cash deposits or withdrawals deliberately kept below the $10,000 AUD reporting threshold.",
+      "CREATED_AT": "2026-10-01 03:12:03.711"
+    },
+    {
+      "FOOTNOTE_ID": "e4978d6b-4c63-43f7-a6e6-f79b2cadd781",
+      "FINDING_ID": "9646f20a-a251-4ef7-8b4e-a49dbbc0157c",
+      "FOOTNOTE_NUMBER": 2,
+      "METRIC_NAME": "counterparty_exposure_usd",
+      "METRIC_DEFINITION": "Entity-resolved exposure: direct_exposure_usd plus the balance of ACTIVE accounts held by corporates where this counterparty is a beneficial owner. This is the governed measure for counterparty exposure.",
+      "GENERATED_SQL": "SELECT dc.COUNTERPARTY_ID, dc.FULL_LEGAL_NAME, dc.RISK_RATING, dc.JURISDICTION, dc.RESOLVED_EXPOSURE_USD AS counterparty_exposure_usd FROM PAPERTRAIL.GOLD.DIM_COUNTERPARTY dc WHERE dc.COUNTERPARTY_ID = 'CP-STRUCT-01'",
+      "RESULT_VALUE": "87185.10",
+      "SOURCE_ROW_IDS": [
+        "CP-STRUCT-01"
+      ],
+      "SOURCE_TABLE": "PAPERTRAIL.GOLD.DIM_COUNTERPARTY",
+      "CLAUSE_ID": "DOC-TXN-MONITORING-3-4",
+      "CLAUSE_NUMBER": "§3.4",
+      "CLAUSE_TEXT_EXCERPT": "The monitoring system must aggregate transaction values across all accounts held by the same counterparty when evaluating thresholds.",
+      "CREATED_AT": "2026-10-01 03:12:14.955"
+    }
+  ],
+  "counts": [
+    {
+      "TRANSACTIONS": 240762,
+      "COUNTERPARTIES": 809,
+      "ACCOUNTS": 1497,
+      "ALERTS": 219,
+      "CASES": 93,
+      "CLAUSES": 72,
+      "DOCUMENTS": 11,
+      "FINDINGS": 1
+    }
+  ],
+  "dynamicTables": [
+    {
+      "SCHEMA": "CURATED",
+      "NAME": "ACCOUNT_ENRICHED",
+      "ROWS": 1497,
+      "TARGET_LAG": "1 hour",
+      "REFRESH_MODE": "FULL"
+    },
+    {
+      "SCHEMA": "CURATED",
+      "NAME": "ALERT_ENRICHED",
+      "ROWS": 219,
+      "TARGET_LAG": "1 hour",
+      "REFRESH_MODE": "FULL"
+    },
+    {
+      "SCHEMA": "CURATED",
+      "NAME": "ENTITY_LINK",
+      "ROWS": 40,
+      "TARGET_LAG": "1 hour",
+      "REFRESH_MODE": "INCREMENTAL"
+    },
+    {
+      "SCHEMA": "CURATED",
+      "NAME": "TRANSACTION_CLASSIFIED",
+      "ROWS": 240762,
+      "TARGET_LAG": "1 hour",
+      "REFRESH_MODE": "FULL"
+    },
+    {
+      "SCHEMA": "GOLD",
+      "NAME": "DIM_ACCOUNT",
+      "ROWS": 1497,
+      "TARGET_LAG": "1 hour",
+      "REFRESH_MODE": "FULL"
+    },
+    {
+      "SCHEMA": "GOLD",
+      "NAME": "DIM_COUNTERPARTY",
+      "ROWS": 809,
+      "TARGET_LAG": "1 hour",
+      "REFRESH_MODE": "FULL"
+    },
+    {
+      "SCHEMA": "GOLD",
+      "NAME": "FACT_ALERT",
+      "ROWS": 219,
+      "TARGET_LAG": "1 hour",
+      "REFRESH_MODE": "FULL"
+    },
+    {
+      "SCHEMA": "GOLD",
+      "NAME": "FACT_CASE",
+      "ROWS": 93,
+      "TARGET_LAG": "1 hour",
+      "REFRESH_MODE": "FULL"
+    },
+    {
+      "SCHEMA": "GOLD",
+      "NAME": "FACT_TRANSACTION",
+      "ROWS": 240762,
+      "TARGET_LAG": "1 hour",
+      "REFRESH_MODE": "FULL"
+    }
+  ]
+}

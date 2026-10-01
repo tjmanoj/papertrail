@@ -16,3 +16,8 @@ data/out/*
 
 # PDFs are rendered from the generator; regenerate rather than store
 data/out/pdf/
+
+# web app build output and local deps
+web/node_modules/
+web/.next/
+web/.vercel
