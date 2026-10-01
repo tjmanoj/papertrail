@@ -1,0 +1,76 @@
+I'll start by reading the project instructions and the generate.py file to understand the full scope of changes needed.Now let me re-read the key early sections with the date constants and typology definitions.Let me search for all hardcoded dates in the file to build a complete audit.Let me read the counterparty and account generation sections more closely.Now let me read the typology transaction sections and the ground truth entries.Let me check the early part of the file for the helpers and any remaining dates.Now let me check if the `--verify-determinism` flag exists already.Good, I now have the complete picture. Let me also check the existing ground_truth.csv and the current output directory.I have a thorough understanding of every hardcoded date in the file. Here's my audit and plan before making changes.
+
+## Date Audit — 38 hardcoded dates in generate.py
+
+**SHIFT +3 months** (window-relative — these position events within the data window):
+
+| Line | Old | New | Reason |
+|------|-----|-----|--------|
+| 93 | `START_DATE 2025-01-01` | `2025-04-01` | Main window start |
+| 94 | `END_DATE 2026-06-30` | `2026-09-30` | Main window end |
+| 337 | T6 mule onboard `2026-01-01..2026-03-01` | `2026-04-01..2026-06-01` | Recently onboarded mules |
+| 445 | T6 mule account opened `2026-01-15` | `2026-04-15` | |
+| 695 | T3 dormant burst_start `2026-04-01` | `2026-07-01` | |
+| 724 | ground truth `"2026-04-01 to 2026-04-14"` | `"2026-07-01 to 2026-07-14"` | |
+| 784 | T6 mule_window_start `2026-03-10` | `2026-06-10` | |
+| 812 | ground truth `"2026-03-10 to 2026-03-12"` | `"2026-06-10 to 2026-06-12"` | |
+| 877 | T1 struct alert `2025-05-01` | `2025-08-01` | |
+| 887 | T2 roundtrip alert `2025-08-15` | `2025-11-15` | |
+| 896 | T3 dormant alert `2026-04-05` | `2026-07-05` | |
+| 903 | T4 sanctions alert `2025-11-01` | `2026-02-01` | |
+| 909 | ground truth `"2025-11-01 screening"` | `"2026-02-01 screening"` | |
+| 919 | T5 velocity alert `2025-09-01` | `2025-12-01` | |
+| 929 | T6 mule alert `2026-03-14` | `2026-06-14` | |
+| 992 | T1 case opened `2025-05-05` | `2025-08-05` | |
+| 997 | T2 case opened `2025-08-20` | `2025-11-20` | |
+| 1002 | T3 case opened `2026-04-08` | `2026-07-08` | |
+| 1007 | T5 case opened `2025-09-05` | `2025-12-05` | |
+| 1012 | T6 case opened `2026-03-16` | `2026-06-16` | |
+| 1099 | T4 screening `"2025-11-01T09:30:00"` | `"2026-02-01T09:30:00"` | |
+| 1108 | T4 screening `"2025-11-01T09:30:00"` | `"2026-02-01T09:30:00"` | |
+
+**STAY** (absolute historical or outside the data window):
+
+| Line | Value | Reason |
+|------|-------|--------|
+| 199 | `1955-01-01` | DOB generation anchor |
+| 305 | `2022-06-01` | T3 dormant onboarding — must predate window by years to establish dormancy |
+| 434 | `2022-07-01` | T3 dormant account opened — same as above |
+| 1048 | `"2023-06-15"` | Watchlist listing date — historical sanctions list |
+| 1061 | `"2022-01-10"` | Watchlist listing date — historical |
+| 1079 | `2018-01-01` | Background watchlist listing range start |
+| 1080 | `2023-01-01` | Background watchlist delisting range start |
+| 1082 | `1950/2000` | DOB range for watchlist individuals |
+| 1158-1303 | All `2024-*` | Regulatory document effective dates — policies predate the data window |
+
+The T3 dormant reactivation is the trickiest: the 2022 onboarding dates stay (establishing 4+ years of history), while the 2026-04-01 burst shifts to 2026-07-01, giving an even longer dormancy gap. This makes the typology stronger, not weaker.
+
+Now I'll make all the edits.Now shifting all the remaining window-relative dates. I'll batch the edits.Now the alert dates and case dates.Now the case investigation dates.Now the T4 screening dates.All 22 date shifts are done. Let me verify with a final grep.Regenerating the data.Generation succeeded. Now running the determinism check.All 12 files PASS. Now running the verification checks.All checks pass. Here's the summary:
+
+---
+
+## Results
+
+**Window shifted:** `2025-01-01..2026-06-30` → `2025-04-01..2026-09-30`
+
+**22 window-relative dates shifted +3 months** across typology transactions, alerts, cases, screening results, and ground truth descriptions. **16 absolute-historical dates left unchanged** (2022 dormant onboarding/account dates, watchlist listing dates, regulatory document effective dates, DOB anchors).
+
+**Determinism:** ALL 12 FILES PASS.
+
+**Verification:**
+
+| Check | Result |
+|-------|--------|
+| Transaction date range | 2025-04-01 to 2026-10-02 |
+| Q3 2026 transactions | **89,872** (was 71) |
+| Final 6 months density | Apr: 13K, May: 16K, Jun: 17K, Jul: 22K, Aug: 31K, Sep: 37K |
+| Ground truth entity resolution | All 6 typologies PASS |
+| Orphan foreign keys | **0** |
+
+The 63 transactions in October 2026 are from month-boundary straddlers (booked Sep 30, value date Oct 1-2) — expected and correct.
+
+"Last quarter" (Q3 2026) now returns ~90K transactions instead of 71. "Last month" (Sep 2026) has 36.5K. "This year" covers Jan-Sep 2026 densely. Ready for judging.
+
+Now let me log this session.Let me check if the log entry ended up in the right place.The log entry landed at the end where it belongs. Also need to clean up the duplicate `---` that the edit introduced at the top of the file.Top of file looks fine — the edit correctly found and replaced the "---" at the end of the file (after the "I made i21f live" text), not the one at the top. All good.
+
+Done. All 5 tasks complete — the data window is shifted, CSVs regenerated, determinism verified, and integrity checked. Next session: reload into Snowflake.

@@ -1,0 +1,12 @@
+version: 1
+artifacts:
+  - path: PAPERTRAIL_SEMANTIC.sv.yaml
+    type: semantic_view
+    targets:
+      default:
+        object: PAPERTRAIL.GOLD.PAPERTRAIL_SEMANTIC
+  - path: ../semantic/papertrail_semantic.sv.yaml
+    type: semantic_view
+    targets:
+      default:
+        object: PAPERTRAIL.GOLD.PAPERTRAIL_SEMANTIC

@@ -90,8 +90,8 @@ for arg in sys.argv[1:]:
 OUT.mkdir(parents=True, exist_ok=True)
 
 # ── time window ─────────────────────────────────────────────
-START_DATE = datetime.date(2025, 1, 1)
-END_DATE = datetime.date(2026, 6, 30)  # 18 months
+START_DATE = datetime.date(2025, 4, 1)
+END_DATE = datetime.date(2026, 9, 30)  # 18 months
 DAYS = (END_DATE - START_DATE).days + 1
 
 # ── helpers ─────────────────────────────────────────────────
@@ -334,7 +334,7 @@ for i in range(5):
     cp = make_individual(
         cid=f"CP-MULE-{i:02d}",
         jurisdiction="AU",
-        onboard_date=rand_date(datetime.date(2026, 1, 1), datetime.date(2026, 3, 1)),
+        onboard_date=rand_date(datetime.date(2026, 4, 1), datetime.date(2026, 6, 1)),
         risk="LOW"
     )
     counterparties.append(cp)
@@ -442,7 +442,7 @@ for cid in dormant_cps:
 mule_accts = []
 for cid in mule_cps:
     a = make_account(cid, acct_type="SAVINGS",
-                     opened=datetime.date(2026, 1, 15),
+                     opened=datetime.date(2026, 4, 15),
                      aid=f"AC-MULE-{cid[-2:]}")
     accounts.append(a)
     acct_by_cp[cid].append(a)
@@ -692,7 +692,7 @@ dormant_txn_ids = []
 for idx, aid in enumerate(dormant_accts):
     cid = dormant_cps[idx]
     # No transactions for 14+ months, then sudden burst
-    burst_start = datetime.date(2026, 4, 1)
+    burst_start = datetime.date(2026, 7, 1)
     # flip status to ACTIVE
     for a in accounts:
         if a["account_id"] == aid:
@@ -721,7 +721,7 @@ record_gt("DORMANT_REACTIVATION",
           {"counterparty_ids": dormant_cps,
            "account_ids": dormant_accts,
            "transaction_ids": dormant_txn_ids},
-          "2026-04-01 to 2026-04-14",
+          "2026-07-01 to 2026-07-14",
           "Dormant 14+ months then burst of 10+ transactions totalling >$50K in 2 weeks")
 
 # ── T4: Sanctions Near-Match ────────────────────────────────
@@ -781,7 +781,7 @@ print("  Planting T6: Mule Network...")
 mule_txn_ids = []
 mule_originator = "GlobalTrade Finance Corp"
 mule_beneficiary = "Eastbridge Consolidated Ltd"
-mule_window_start = datetime.date(2026, 3, 10)
+mule_window_start = datetime.date(2026, 6, 10)
 
 # Fan-out from originator → each mule
 total_origin = round(random.uniform(200000, 350000), 2)
@@ -809,7 +809,7 @@ record_gt("MULE_NETWORK",
           {"counterparty_ids": mule_cps,
            "account_ids": mule_accts,
            "transaction_ids": mule_txn_ids},
-          "2026-03-10 to 2026-03-12",
+          "2026-06-10 to 2026-06-12",
           "5 unrelated individuals all receive from same originator and forward to same beneficiary within 48h")
 
 # ── PENDING txns (additional edge cases) ────────────────────
@@ -874,7 +874,7 @@ for cid in structuring_cps:
                and t["transaction_type"] == "CASH_DEPOSIT"
                and t["amount_usd"] >= 8000]
     aid = make_alert(cid, "STRUCTURING", "HIGH", "OPEN",
-                     datetime.date(2025, 5, 1), cp_txns[:10])
+                     datetime.date(2025, 8, 1), cp_txns[:10])
     struct_alert_ids.append(aid)
 
 # T2 alerts
@@ -884,7 +884,7 @@ for cid in roundtrip_cps:
                if t["account_id"] in [a["account_id"] for a in acct_by_cp[cid]]
                and t["transaction_type"] in ("WIRE_IN","WIRE_OUT")]
     aid = make_alert(cid, "ROUND_TRIPPING", "HIGH", "ESCALATED",
-                     datetime.date(2025, 8, 15), cp_txns[:8])
+                     datetime.date(2025, 11, 15), cp_txns[:8])
     rt_alert_ids.append(aid)
 
 # T3 alerts
@@ -893,20 +893,20 @@ for cid in dormant_cps:
     cp_txns = [t["transaction_id"] for t in transactions
                if t["account_id"] in [a["account_id"] for a in acct_by_cp[cid]]]
     aid = make_alert(cid, "DORMANT_REACTIVATION", "MEDIUM", "OPEN",
-                     datetime.date(2026, 4, 5), cp_txns[:15])
+                     datetime.date(2026, 7, 5), cp_txns[:15])
     dormant_alert_ids.append(aid)
 
 # T4 alerts (sanctions)
 sanctions_alert_ids = []
 for cid in sanctions_cps:
     aid = make_alert(cid, "SANCTIONS_NEAR_MATCH", "CRITICAL", "OPEN",
-                     datetime.date(2025, 11, 1), [])
+                     datetime.date(2026, 2, 1), [])
     sanctions_alert_ids.append(aid)
 
 record_gt("SANCTIONS_NEAR_MATCH",
           {"counterparty_ids": sanctions_cps,
            "alert_ids": sanctions_alert_ids},
-          "2025-11-01 screening",
+          "2026-02-01 screening",
           "CP-SANCTIONS-00 (Aleksandr Petrov) true positive; CP-SANCTIONS-01 (Mohammad Al-Rashid) false positive")
 
 # T5 alerts
@@ -916,7 +916,7 @@ for cid in velocity_cps:
                if t["account_id"] in [a["account_id"] for a in acct_by_cp[cid]]
                and t["transaction_type"] in ("WIRE_IN","WIRE_OUT")]
     aid = make_alert(cid, "VELOCITY_SPIKE", "HIGH", "OPEN",
-                     datetime.date(2025, 9, 1), cp_txns[:20])
+                     datetime.date(2025, 12, 1), cp_txns[:20])
     vel_alert_ids.append(aid)
 
 # T6 alerts
@@ -926,7 +926,7 @@ for cid in mule_cps:
                if t["account_id"] in [a["account_id"] for a in acct_by_cp[cid]]]
     aid = make_alert(cid, "MULE_NETWORK", "CRITICAL",
                      random.choice(["OPEN","ESCALATED"]),
-                     datetime.date(2026, 3, 14), cp_txns)
+                     datetime.date(2026, 6, 14), cp_txns)
     mule_alert_ids.append(aid)
 
 # Update mule ground truth with alert IDs
@@ -989,27 +989,27 @@ def make_case(cid, alert_ids_list, opened, status, priority, closed=None):
 
 # T1 cases
 for i, cid in enumerate(structuring_cps):
-    make_case(cid, [struct_alert_ids[i]], datetime.date(2025, 5, 5),
+    make_case(cid, [struct_alert_ids[i]], datetime.date(2025, 8, 5),
               "UNDER_REVIEW", "URGENT")
 
 # T2 cases
 for i, cid in enumerate(roundtrip_cps):
-    make_case(cid, [rt_alert_ids[i]], datetime.date(2025, 8, 20),
+    make_case(cid, [rt_alert_ids[i]], datetime.date(2025, 11, 20),
               "ESCALATED_TO_MLRO", "CRITICAL")
 
 # T3 cases
 for i, cid in enumerate(dormant_cps):
-    make_case(cid, [dormant_alert_ids[i]], datetime.date(2026, 4, 8),
+    make_case(cid, [dormant_alert_ids[i]], datetime.date(2026, 7, 8),
               "OPEN", "ROUTINE")
 
 # T5 velocity cases
 for i, cid in enumerate(velocity_cps):
-    make_case(cid, [vel_alert_ids[i]], datetime.date(2025, 9, 5),
+    make_case(cid, [vel_alert_ids[i]], datetime.date(2025, 12, 5),
               "UNDER_REVIEW", "URGENT")
 
 # T6 mule cases (single case covering all mule alerts)
 mule_case_id = make_case(mule_cps[0], mule_alert_ids,
-                         datetime.date(2026, 3, 16),
+                         datetime.date(2026, 6, 16),
                          "ESCALATED_TO_MLRO", "CRITICAL")
 
 # Background noise cases
@@ -1096,7 +1096,7 @@ screening_results.append({
     "screening_id": "SCR-SANCTIONS-00",
     "counterparty_id": "CP-SANCTIONS-00",
     "watchlist_entry_id": "WL-SANCTIONS-00",
-    "screening_date": "2025-11-01T09:30:00",
+    "screening_date": "2026-02-01T09:30:00",
     "match_score": 82.5,  # between 75-89 as specified
     "match_status": "PENDING_REVIEW",  # true positive that should be caught
     "reviewed_by": None,
@@ -1105,7 +1105,7 @@ screening_results.append({
     "screening_id": "SCR-SANCTIONS-01",
     "counterparty_id": "CP-SANCTIONS-01",
     "watchlist_entry_id": "WL-SANCTIONS-01",
-    "screening_date": "2025-11-01T09:30:00",
+    "screening_date": "2026-02-01T09:30:00",
     "match_score": 78.0,
     "match_status": "FALSE_POSITIVE",  # genuinely different person
     "reviewed_by": "ANALYST-003",
