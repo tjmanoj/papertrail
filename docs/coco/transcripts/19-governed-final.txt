@@ -1,0 +1,48 @@
+I'll start by understanding the current state of the experiment, then run the governed half.Good. I have all 25 ungoverned rows — zero variance confirmed across all 5 questions. Now I need the semantic view name to run the governed path via Cortex Analyst.The semantic view is `PAPERTRAIL.GOLD.PAPERTRAIL_SEMANTIC`. Let me set up the task list and start running the governed experiments.Running all 5 questions through Cortex Analyst now — 3 runs each. I'll fire them in batches.Run 1 complete — already seeing significant SQL differences on Q1, Q2, and Q5. Running the remaining 2 iterations.Run 2 identical to run 1 across all 5 questions. Firing run 3.All 3 runs complete — governed path is also perfectly stable (identical SQL across all runs). Now I need to execute each governed SQL to get the actual numeric answers, then insert into the experiment table.All governed answers obtained. Now inserting governed results into the experiment table.Now I need to understand the governance decisions. Let me check what `is_high_risk` means in the governed model vs the raw `RISK_RATING = 'HIGH'` filter, and verify the Q1 governance logic by looking at the semantic view.Now I have the full picture for the governance analysis. Let me also read the fact_transaction description to understand the Q1 filters.Now I have all the evidence. Let me write the complete experiment document and insert it. Let me also check the `docs/` directory first.Writing the experiment document with full results and honest analysis.Already auto-suspended (AUTO_SUSPEND = 60 doing its job).---
+
+## Comparison Table
+
+| Q | Question | Ungoverned | Governed | Diff | Verdict |
+|---|----------|-----------|----------|------|---------|
+| Q1 | Suspicious txn volume Q3 2026 | **$8,797,923** | **$4,295,229** | +$4.5M (+105%) | **DIVERGE** |
+| Q2 | Exposure to CP-STRUCT-01 | $87,185 | $87,185 | $0 (0%) | AGREE |
+| Q3 | Alert closure rate 2026 | 63.6% | 63.6% | 0 | AGREE |
+| Q4 | SAR filing share | 6.5% | 6.5% | 0 | AGREE |
+| Q5 | High-risk counterparties in SG | **23** | **36** | -13 (-36%) | **DIVERGE** |
+
+**Stability:** Both paths produced zero variance. The ungoverned LLM was byte-identical across all 5 runs per question. Our hypothesis about variance was wrong.
+
+## The headline
+
+**The ungoverned path is perfectly consistent and perfectly confident, and on 2 of 5 questions it is materially wrong, with no signal to the reader that anything is wrong.**
+
+- **Q1** overstates suspicious volume by **$4.5M (105%)** — it includes reversals, unsettled transactions, uses booking date instead of value date, and counts closed-alert-linked transactions. Four governance decisions missed.
+- **Q5** undercounts high-risk counterparties by **13 (36%)** — it filters `RISK_RATING = 'HIGH'` literally, missing `VERY_HIGH` entities that KYC policy section 2.1 requires be included. One governance decision missed.
+
+Your prediction was correct: Q1 and Q5 diverge, Q2/Q3/Q4 agree.
+
+The full analysis with SQL diffs is in `docs/governance-experiment.md`. 15 governed rows recorded in `GOVERNANCE_EXPERIMENT` (path = `GOVERNED`). Warehouse already auto-suspended.<No response>All done. Here's the summary:
+
+## Comparison Table
+
+| Q | Question | Ungoverned | Governed | Diff | Verdict |
+|---|----------|-----------|----------|------|---------|
+| Q1 | Suspicious txn volume Q3 2026 | **$8,797,923** | **$4,295,229** | +$4.5M (+105%) | **DIVERGE** |
+| Q2 | Exposure to CP-STRUCT-01 | $87,185 | $87,185 | $0 (0%) | AGREE |
+| Q3 | Alert closure rate 2026 | 63.6% | 63.6% | 0 | AGREE |
+| Q4 | SAR filing share | 6.5% | 6.5% | 0 | AGREE |
+| Q5 | High-risk counterparties in SG | **23** | **36** | -13 (-36%) | **DIVERGE** |
+
+**Stability:** Both paths zero variance. Ungoverned was byte-identical across all 5 runs. Governed was byte-identical across all 3 runs. The variance hypothesis was wrong.
+
+## The headline
+
+**The ungoverned path is perfectly consistent and perfectly confident, and on 2 of 5 questions it is materially wrong, with no signal to the reader that anything is wrong.**
+
+- **Q1** overstates suspicious volume by **$4.5M (105%)** — four governance decisions missed: uses booking date instead of value date, includes reversals, includes unsettled transactions, and counts closed-alert-linked transactions as suspicious.
+- **Q5** undercounts high-risk counterparties by **13 entities (36%)** — one governance decision missed: filters `RISK_RATING = 'HIGH'` literally, missing `VERY_HIGH` entities that KYC policy section 2.1 requires be included.
+- **Q2** agrees here but uses the wrong methodology (direct exposure vs entity-resolved) — it would diverge for any counterparty with beneficial ownership links.
+
+Your prediction was correct: Q1 and Q5 diverge, Q2/Q3/Q4 agree.
+
+Full writeup with SQL diffs and root causes is in `docs/governance-experiment.md`. 15 governed rows recorded in `GOVERNANCE_EXPERIMENT`. Warehouse already auto-suspended.

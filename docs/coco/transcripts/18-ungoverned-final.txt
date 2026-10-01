@@ -1,0 +1,15 @@
+I'll start by reading the experiment table DDL and the raw table structures to build context.Good, I have the table structures. Now I'll generate all 25 SQL queries in one bulk AI_COMPLETE call, then execute each one. Let me create the staging table with the cross-join approach.All 25 queries generated. Let me fetch them and start executing.Temporary table isn't visible across sessions. Let me recreate as a regular table.All 5 runs per question generated identical SQL — that's itself a data point (zero SQL variance). Now I'll execute the 5 distinct queries and bulk-insert all 25 rows into the experiment table.All 5 queries executed successfully. Now I'll bulk-insert all 25 rows into the experiment table and clean up.Now let me clean up the staging table and suspend the warehouse.Already suspended (auto-suspend kicked in). Here are the ungoverned experiment results:
+
+## Ungoverned Path — Per-Question Summary
+
+| Question | Answer | Distinct Values | Spread | Errors |
+|---|---|---|---|---|
+| **Q1** Total suspicious txn volume Q3 2026 | 8,797,923.12 | 1 | 0 | 0 |
+| **Q2** Total exposure to CP-STRUCT-01 | 87,185.10 | 1 | 0 | 0 |
+| **Q3** Alert closure rate 2026 | 0.636364 | 1 | 0 | 0 |
+| **Q4** SAR filing share of cases | 0.064516 | 1 | 0 | 0 |
+| **Q5** High risk counterparties in SG | 23 | 1 | 0 | 0 |
+
+**Key observation:** The ungoverned path produced **zero variance** — identical SQL across all 5 runs per question, zero errors, and a single numeric answer each time. The LLM was perfectly consistent *given the same DDL context*.
+
+This is actually the interesting setup for the governed comparison: the ungoverned numbers look clean and confident, but the question the experiment asks is whether they're *correct* — e.g., does Q1 exclude reversals and failed transactions? Does Q3 handle integer division? Does Q5 include VERY_HIGH risk ratings? Those are the governance decisions the semantic view encodes that raw SQL generation doesn't consider. 25 rows written to `GOVERNANCE.GOVERNANCE_EXPERIMENT` with `path='UNGOVERNED'`.
