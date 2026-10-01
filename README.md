@@ -12,7 +12,7 @@ Problem statement 1 - *Risk, Fraud and Regulatory Intelligence Copilot*
 | | |
 |---|---|
 | **Live app** (no login required) | **https://papertrail-provenance.vercel.app** |
-| **Native app** (Streamlit in Snowflake) | [open it](https://app.snowflake.com/streamlit/inpukmk/at72852/#/apps/ahcfaco22em3htdk4bq2) - needs a role in the Snowflake account |
+| **Native app** (Streamlit in Snowflake) | `PAPERTRAIL.GOLD.PAPERTRAIL_APP` - open from Snowsight with a role in the account |
 
 Three things a judge can do without taking our word for anything:
 

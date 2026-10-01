@@ -331,7 +331,6 @@ lh2 = min(760000, FLOOR - y)
 links = card(sl, MARGIN, y, BODY_W, lh2, fill=NAVY, border=None)
 APP = "https://papertrail-provenance.vercel.app"
 REPO = "https://github.com/tjmanoj/papertrail"
-NATIVE = "https://app.snowflake.com/streamlit/inpukmk/at72852/#/apps/ahcfaco22em3htdk4bq2"
 write(links.text_frame,
       [[("Live app    ", {"color": MUTED, "size": 9.5}),
         ("papertrail-provenance.vercel.app",
@@ -340,10 +339,8 @@ write(links.text_frame,
        [("Repository    ", {"color": MUTED, "size": 9.5}),
         ("github.com/tjmanoj/papertrail",
          {"color": WHITE, "size": 10.5, "link": REPO}),
-        ("        Native app    ", {"color": MUTED, "size": 9.5}),
-        ("Streamlit in Snowflake",
-         {"color": WHITE, "size": 10.5, "link": NATIVE}),
-        ("  login required", {"color": MUTED, "size": 9})]],
+        ("        Also deployed natively as    ", {"color": MUTED, "size": 9.5}),
+        ("Streamlit in Snowflake", {"color": WHITE, "size": 10.5})]],
       space=4, align=PP_ALIGN.CENTER)
 
 # --------------------------------------------------------------- final sweep

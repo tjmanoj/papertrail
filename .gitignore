@@ -21,3 +21,6 @@ data/out/pdf/
 web/node_modules/
 web/.next/
 web/.vercel
+
+# personal working notes, not part of the submission
+MY-TASKS.md
