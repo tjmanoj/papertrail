@@ -147,3 +147,14 @@ td.r{text-align:right; font-family:var(--mono); font-variant-numeric:tabular-num
   padding:22px 24px; font-family:"IBM Plex Serif",Georgia,serif; font-size:15px; line-height:1.72;
   color:var(--ink-2); white-space:pre-wrap}
 .finding .mk{color:var(--accent); font-family:var(--mono); font-size:11px; vertical-align:super}
+
+.strip{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:1px; background:var(--line); border:1px solid var(--line);
+  border-radius:8px; overflow:hidden; margin-top:22px;
+}
+.strip > div{background:var(--panel); padding:14px 18px}
+.strip .v{display:block; font-family:var(--mono); font-size:21px;
+  font-variant-numeric:tabular-nums; letter-spacing:-.02em; color:var(--ink); line-height:1.15}
+.strip .l{display:block; font-family:var(--mono); font-size:9.5px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--ink-3); margin-top:6px}

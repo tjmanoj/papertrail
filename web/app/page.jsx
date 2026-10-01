@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import snapshot from '../data/snapshot.json';
+import { summarise } from '../lib/agent';
 
 /* ------------------------------------------------------------------ *
  * Analysis that isn't in the database: why each divergence happened.
@@ -78,8 +79,36 @@ function Mark() {
   );
 }
 
+
+/* A compact band of real figures so the page never opens as an empty shell. */
+function StatStrip() {
+  const c = (snapshot.counts || [])[0] || {};
+  const items = [
+    [fmtInt(c.TRANSACTIONS), 'transactions governed'],
+    [fmtInt(c.CLAUSES), 'clauses indexed'],
+    ['11 / 12', 'clause retrieval, top-1'],
+    ['2 of 5', 'ungoverned answers wrong'],
+  ];
+  return (
+    <div className="strip">
+      {items.map(([v, l]) => (
+        <div key={l}>
+          <span className="v num">{v}</span>
+          <span className="l">{l}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ----------------------------------- Ask ---------------------------------- */
 function Ask() {
+  const sample = useMemo(() => {
+    const raw = snapshot.sampleExchange?.raw;
+    if (!raw) return null;
+    const parsed = summarise(raw);
+    return parsed.answer && parsed.answer !== 'The agent returned no text.' ? parsed : null;
+  }, []);
   const [question, setQuestion] = useState('');
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState(null);
@@ -160,6 +189,29 @@ function Ask() {
       {error && (
         <div className="panel">
           <div className="err">{error}</div>
+        </div>
+      )}
+
+      {!result && !busy && !error && sample && (
+        <div className="panel">
+          <span className="eyebrow">A saved exchange — ask your own above</span>
+          {sample.tools?.length > 0 && (
+            <div className="toolrow">
+              {sample.tools.map((t) => (
+                <span key={t} className="tool">{t}</span>
+              ))}
+            </div>
+          )}
+          <div style={{ whiteSpace: 'pre-wrap' }}>{sample.answer}</div>
+          {sample.sql && (
+            <details>
+              <summary>Generated SQL</summary>
+              <pre>{sample.sql}</pre>
+            </details>
+          )}
+          <p className="note" style={{ marginTop: 12 }}>
+            Captured from this agent when the site was built. Asking above runs it live.
+          </p>
         </div>
       )}
 
@@ -624,6 +676,8 @@ export default function Page() {
           </button>
         ))}
       </nav>
+
+      <StatStrip />
 
       <main>
         <Active />

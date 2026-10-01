@@ -20,6 +20,8 @@ const conn = sdk.createConnection({
 
 const q = (sqlText) => new Promise((res, rej) =>
   conn.execute({ sqlText, complete: (e, s, rows) => (e ? rej(e) : res(rows)) }));
+const q2 = (sqlText, binds) => new Promise((res, rej) =>
+  conn.execute({ sqlText, binds, complete: (e, s, rows) => (e ? rej(e) : res(rows)) }));
 
 (async () => {
   await new Promise((res, rej) => conn.connect((e) => (e ? rej(e) : res())));
@@ -62,6 +64,20 @@ const q = (sqlText) => new Promise((res, rej) =>
       TARGET_LAG: r.target_lag, REFRESH_MODE: r.refresh_mode,
     }));
   } catch (e) { console.error('  ! dynamicTables:', e.message); out.dynamicTables = []; }
+
+  // One real agent exchange, captured at build time so the page opens in a
+  // working state rather than an empty shell. Labelled as a saved example in
+  // the UI; asking live uses the same agent.
+  try {
+    const q = 'Which counterparties breach our concentration limit, and what is the limit?';
+    const body = JSON.stringify({ messages: [{ role: 'user', content: [{ type: 'text', text: q }] }] });
+    const rows = await q2(`SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN('PAPERTRAIL.GOLD.PAPERTRAIL_AGENT', ?) AS R`, [body]);
+    out.sampleExchange = { question: q, raw: String(rows[0].R) };
+    console.log('  sample exchange captured');
+  } catch (e) {
+    console.error('  ! sampleExchange:', e.message);
+    out.sampleExchange = null;
+  }
 
   fs.writeFileSync(path.join(__dirname, '..', 'data', 'snapshot.json'),
                    JSON.stringify(out, null, 2));
