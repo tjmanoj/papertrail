@@ -1,0 +1,26 @@
+I'll start by reading the current eval harness and report to understand the existing VELOCITY_SPIKE detector and data distribution.Now let me query the trailing-average distribution to derive the floor from the data, not the answer key.Let me look at the full distribution before the seasonality filter, which is what the user described (97 counterparties).Let me look at the broader population distribution to understand where a meaningful baseline lies.Let me also check CP-VELOCITY-00's profile to understand the false negative.Good. I now have the full picture. Let me set up the todo list and implement.
+
+**Analysis summary:**
+- The flagged CPs' trailing averages range from 7.0 to 33.0
+- Below a trailing average of ~10, the ratio is noisy: small absolute departures (< 50 txns/month) produce large multipliers
+- CP-VELOCITY-00 has a trailing avg of 30-49 — its max ratio is only 2.4x, so it never trips 5x regardless of floor
+- CP-VELOCITY-01 (trailing avg 17.3) and CP-VELOCITY-02 (trailing avg 14.3) are both well above any reasonable floor
+- Floor of **10 txns/month** trailing average: below that, a 5x spike means < 50 transactions — under 2.5/business day, indistinguishable from batch noiseApplying the minimum-baseline floor to the VELOCITY_SPIKE detector.Now change the `trailing_6mo_avg >= 1` to `trailing_6mo_avg >= 10` in the spike_candidates CTE.Running the eval harness.The floor reduced velocity flags from 32 to 22 (eliminated 10 FPs). FPs dropped from 30 to 20, precision improved from 0.062 to 0.091, F1 from 0.114 to 0.160. Both TPs (VELOCITY-01, VELOCITY-02) retained. CP-VELOCITY-00 remains FN as expected. Overall F1 improved from 0.523 to 0.618.Now let me read the auto-generated report and then update it with the additional sections.Now I need to update the Velocity Spike section with the floor details, add the CP-VELOCITY-00 explanation, and add the "Why this is not 100%" section.Now add the "Why this is not 100%" section at the end.Already suspended (auto-suspend caught it).PAPERTRAIL_WH confirmed suspended.Now log this session.Done. Here's the before/after scorecard:
+
+### Before (no floor)
+| Typology | TP | FP | FN | Prec | Rec | F1 |
+|---|---:|---:|---:|---:|---:|---:|
+| VELOCITY_SPIKE | 2 | 30 | 1 | 0.062 | 0.667 | 0.114 |
+| **OVERALL** | **17** | **30** | **1** | **0.362** | **0.944** | **0.523** |
+
+### After (floor = 10 txns/month trailing avg)
+| Typology | TP | FP | FN | Prec | Rec | F1 |
+|---|---:|---:|---:|---:|---:|---:|
+| VELOCITY_SPIKE | 2 | 20 | 1 | 0.091 | 0.667 | 0.160 |
+| **OVERALL** | **17** | **20** | **1** | **0.459** | **0.944** | **0.618** |
+
+All other typologies unchanged at perfect scores. PAPERTRAIL_WH is suspended.
+
+**What changed:**
+- `evals/run_eval.py` — `trailing_6mo_avg >= 1` raised to `>= 10`, with a full §2.3 justification block in the code comment
+- `evals/report.md` — expanded velocity section (floor rationale, distribution evidence, remaining FPs), CP-VELOCITY-00 analysis (trailing avg 30–49, max ratio 2.4×, uncatchable without MLRO sign-off), and "Why this is not 100%" section (no tuning to key, no dropping the weak typology, no loosening ground truth, no relaxing the multiplier)
