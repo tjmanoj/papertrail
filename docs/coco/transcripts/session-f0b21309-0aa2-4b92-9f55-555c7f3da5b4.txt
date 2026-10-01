@@ -1,0 +1,29 @@
+┌─ USER [00:27] ───────────────────────────────────────────────────────────────┐
+│ Report only, change nothing. List all tables in PAPERTRAIL.RAW with their row counts. If the schema is empty say EMPTY. Also list any stages in PAPERTRAIL. Be terse.
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌─ AGENT ──────────────────────────────────────────────────────────────────────┐
+│ 
+│   sql_execute (success)
+│   List stages in PAPERTRAIL
+│ 
+│   sql_execute (success)
+│   List tables and row counts in PAPERTRAIL.RAW
+│ **PAPERTRAIL.RAW** — 11 tables, all empty (0 rows):
+│ 
+│ | Table | Rows |
+│ |---|---|
+│ | ACCOUNT | 0 |
+│ | ALERT | 0 |
+│ | ALERT_TRANSACTION | 0 |
+│ | CASE_ALERT | 0 |
+│ | CASE_INVESTIGATION | 0 |
+│ | COUNTERPARTY | 0 |
+│ | REGULATORY_DOCUMENT | 0 |
+│ | REGULATORY_DOCUMENT_CLAUSE | 0 |
+│ | TRANSACTION | 0 |
+│ | WATCHLIST_ENTRY | 0 |
+│ | WATCHLIST_SCREENING_RESULT | 0 |
+│ 
+│ **Stages:** none.
+└──────────────────────────────────────────────────────────────────────────────┘

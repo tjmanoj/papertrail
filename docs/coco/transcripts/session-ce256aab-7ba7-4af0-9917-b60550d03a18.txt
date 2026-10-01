@@ -1,0 +1,65 @@
+┌─ USER [00:59] ───────────────────────────────────────────────────────────────┐
+│ Report only, change nothing, be terse.
+│ 1. List every table AND dynamic table in PAPERTRAIL.CURATED and PAPERTRAIL.GOLD with row counts and object type.
+│ 2. For each dynamic table report its latest refresh state from DYNAMIC_TABLE_REFRESH_HISTORY (state + any error).
+│ 3. List any data metric functions attached to PAPERTRAIL objects.
+│ 4. Suspend PAPERTRAIL_WH at the end.
+│ Output three short tables.
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌─ AGENT ──────────────────────────────────────────────────────────────────────┐
+│ 
+│   sql_execute (error)
+│   List DMFs attached to PAPERTRAIL objects
+│ 
+│   sql_execute (success)
+│   Latest refresh state for each dynamic table
+│ 
+│   sql_execute (success)
+│   List tables and dynamic tables in CURATED and GOLD with row counts
+│ 
+│   sql_execute (success)
+│   List DMFs via SHOW + DESCRIBE approach
+│ 
+│   sql_execute (success)
+│   Check for dynamic tables specifically
+│ 
+│   sql_execute (success)
+│   Suspend warehouse
+│ 
+│   sql_execute (success)
+│   Show dynamic tables in GOLD
+│ ## 1. Tables in CURATED & GOLD
+│ 
+│ | FQN | Type | Rows |
+│ |-----|------|-----:|
+│ | CURATED.ACCOUNT_ENRICHED | Dynamic Table | 1,497 |
+│ | CURATED.ALERT_ENRICHED | Dynamic Table | 219 |
+│ | CURATED.ENTITY_LINK | Dynamic Table | 40 |
+│ | CURATED.TRANSACTION_CLASSIFIED | Dynamic Table | 240,798 |
+│ | GOLD.DIM_ACCOUNT | Dynamic Table | 1,497 |
+│ | GOLD.DIM_COUNTERPARTY | Dynamic Table | 809 |
+│ 
+│ All 6 objects are dynamic tables. No plain base tables or views in these schemas.
+│ 
+│ ## 2. Dynamic Table Refresh State
+│ 
+│ | Dynamic Table | Schema | State | Error |
+│ |---------------|--------|-------|-------|
+│ | ACCOUNT_ENRICHED | CURATED | SUCCEEDED | — |
+│ | ALERT_ENRICHED | CURATED | SUCCEEDED | — |
+│ | ENTITY_LINK | CURATED | SUCCEEDED | — |
+│ | TRANSACTION_CLASSIFIED | CURATED | SUCCEEDED | — |
+│ | DIM_ACCOUNT | GOLD | SUCCEEDED | — |
+│ | DIM_COUNTERPARTY | GOLD | SUCCEEDED | — |
+│ 
+│ All healthy. ENTITY_LINK is the only one running INCREMENTAL; the rest are FULL (due to `CURRENT_DATE` or complex queries).
+│ 
+│ ## 3. Data Metric Functions
+│ 
+│ None attached to any PAPERTRAIL object.
+│ 
+│ ---
+│ 
+│ `PAPERTRAIL_WH` suspended.
+└──────────────────────────────────────────────────────────────────────────────┘

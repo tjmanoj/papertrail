@@ -1,0 +1,264 @@
+┌─ USER [00:43] ───────────────────────────────────────────────────────────────┐
+│ Reload PAPERTRAIL.RAW from the regenerated CSVs. Read CORTEX.md first.
+│ 
+│ Context: data/generate.py was fixed for determinism, so data/out/ has been
+│ regenerated and all entity IDs changed. The data currently in Snowflake is
+│ STALE and must be fully replaced. sql/02-load.sql already exists and is correct.
+│ 
+│ Repo root contains a space in its path - quote paths in PUT commands.
+│ Absolute CSV dir: /Users/manoj/Documents/Tj/h2skill/snowflake coco/papertrail/data/out/
+│ 
+│ Steps:
+│ 1. Re-PUT all 11 CSVs to @PAPERTRAIL.RAW.PAPERTRAIL_LOAD/<tablename>/ with
+│    OVERWRITE=TRUE AUTO_COMPRESS=TRUE. EXCLUDE ground_truth.csv - it is the
+│    held-out answer key and must never enter Snowflake.
+│ 2. Run the TRUNCATE + COPY INTO statements from sql/02-load.sql.
+│ 3. Confirm ground_truth.csv is absent from the stage - LIST the stage and check.
+│ 4. Verify and report ONE table with: table, rows in Snowflake, rows in the
+│    local CSV (count logical CSV records with Python's csv module, NOT wc -l,
+│    because regulatory_document.csv has embedded newlines in quoted fields),
+│    and match Y/N. All 11 must match.
+│ 5. Referential integrity in Snowflake: report orphan counts for every foreign
+│    key in docs/data-model.md. All must be zero.
+│ 6. Confirm the planted typologies survived the round trip. Read
+│    data/out/ground_truth.csv locally, then for each of the 6 typologies check
+│    that its referenced transaction_ids / account_ids / alert_ids all exist in
+│    Snowflake. Report found/total per typology - all must be 100%.
+│ 7. Suspend PAPERTRAIL_WH.
+│ 
+│ Report the three tables and nothing else unless something failed.
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌─ AGENT ──────────────────────────────────────────────────────────────────────┐
+│ I'll start by reading the key files to understand the current setup.
+│ 
+│   read (success)
+│   /Users/manoj/Documents/Tj/h2skill/snowflake coco/papertrail/docs/data-m…
+│ 
+│   glob (success)
+│   data/out/*.csv
+│ 
+│   read (success)
+│   /Users/manoj/Documents/Tj/h2skill/snowflake coco/papertrail/sql/02-load…
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌─ AGENT ──────────────────────────────────────────────────────────────────────┐
+│ I need to read the foreign keys section from the data model doc.
+│ 
+│   read (success)
+│   /Users/manoj/.snowflake/cortex/cache/tool_outputs/c6fc48ed-b011-46e8-8a…
+│ 
+│   read (success)
+│   /Users/manoj/.snowflake/cortex/cache/tool_outputs/c6fc48ed-b011-46e8-8a…
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌─ AGENT ──────────────────────────────────────────────────────────────────────┐
+│ Good, I have all the context. Let me start the reload.Uploading 11 CSVs to the stage (excluding ground_truth.csv).
+│ 
+│   system_todo_write (success)
+│   {"todos":[{"content":"PUT 11 CSVs to stage (exclude ground_truth.csv)",…
+│ 
+│   sql_execute (success)
+│   Set context to PAPERTRAIL.RAW with PAPERTRAIL_WH
+│ 
+│   sql_execute (success)
+│   Create stage if not exists
+│ Now PUT all 11 CSVs. I'll batch them.
+│ 
+│   sql_execute (success)
+│   PUT counterparty.csv to stage
+│ 
+│   sql_execute (error)
+│   PUT transaction.csv to stage
+│ 
+│   sql_execute (error)
+│   PUT case_alert.csv to stage
+│ 
+│   sql_execute (error)
+│   PUT regulatory_document.csv to stage
+│ 
+│   sql_execute (error)
+│   PUT alert.csv to stage
+│ 
+│   sql_execute (error)
+│   PUT alert_transaction.csv to stage
+│ 
+│   sql_execute (error)
+│   PUT account.csv to stage
+│ 
+│   sql_execute (success)
+│   PUT watchlist_entry.csv to stage
+│ 
+│   sql_execute (error)
+│   PUT watchlist_screening_result.csv to stage
+│ 
+│   sql_execute (error)
+│   PUT case_investigation.csv to stage
+│ 
+│   sql_execute (error)
+│   PUT regulatory_document_clause.csv to stage
+│ Some PUTs lost the session context. I'll use fully qualified stage names for the remaining ones.
+│ 
+│   sql_execute (success)
+│   PUT alert_transaction.csv with FQN
+│ 
+│   sql_execute (success)
+│   PUT regulatory_document_clause.csv with FQN
+│ 
+│   sql_execute (success)
+│   PUT case_alert.csv with FQN
+│ 
+│   sql_execute (success)
+│   PUT alert.csv with FQN
+│ 
+│   sql_execute (success)
+│   PUT watchlist_screening_result.csv with FQN
+│ 
+│   sql_execute (success)
+│   PUT transaction.csv with FQN
+│ 
+│   sql_execute (success)
+│   PUT regulatory_document.csv with FQN
+│ 
+│   sql_execute (success)
+│   PUT account.csv with FQN
+│ 
+│   sql_execute (success)
+│   PUT case_investigation.csv with FQN
+│ All 11 CSVs uploaded. Now running the TRUNCATE + COPY INTO statements.
+│ 
+│   system_todo_write (success)
+│   {"todos":[{"content":"PUT 11 CSVs to stage (exclude ground_truth.csv)",…
+│ 
+│   sql_execute (success)
+│   Set context and create file format
+│ 
+│   sql_execute (success)
+│   TRUNCATE + COPY case_investigation
+│ 
+│   sql_execute (success)
+│   TRUNCATE + COPY alert
+│ 
+│   sql_execute (success)
+│   TRUNCATE + COPY alert_transaction
+│ 
+│   sql_execute (success)
+│   TRUNCATE + COPY regulatory_document
+│ 
+│   sql_execute (success)
+│   TRUNCATE + COPY account
+│ 
+│   sql_execute (success)
+│   TRUNCATE + COPY case_alert
+│ 
+│   sql_execute (success)
+│   TRUNCATE + COPY watchlist_entry
+│ 
+│   sql_execute (success)
+│   TRUNCATE + COPY transaction
+│ 
+│   sql_execute (success)
+│   TRUNCATE + COPY watchlist_screening_result
+│ 
+│   sql_execute (success)
+│   TRUNCATE + COPY counterparty
+│ 
+│   sql_execute (success)
+│   TRUNCATE + COPY regulatory_document_clause
+│ All 11 tables loaded with zero errors. Now checking stage for ground_truth.csv and counting rows.
+│ 
+│   system_todo_write (success)
+│   {"todos":[{"content":"PUT 11 CSVs to stage (exclude ground_truth.csv)",…
+│ 
+│   python_repl (success)
+│   Count CSV rows using csv module for all 11 tables
+│ 
+│   sql_execute (success)
+│   LIST stage to check for ground_truth.csv
+│ 
+│   sql_execute (success)
+│   Get row counts for all 11 tables
+│ ground_truth.csv is absent from stage (0 rows returned). All 11 table counts match exactly. Now checking referential integrity.
+│ 
+│   system_todo_write (success)
+│   {"todos":[{"content":"PUT 11 CSVs to stage (exclude ground_truth.csv)",…
+│ 
+│   sql_execute (success)
+│   Check orphan counts for all foreign keys
+│ All 11 FK checks: zero orphans. Now checking planted typologies.
+│ 
+│   system_todo_write (success)
+│   {"todos":[{"content":"PUT 11 CSVs to stage (exclude ground_truth.csv)",…
+│ 
+│   python_repl (success)
+│   Parse ground_truth.csv to extract typology IDs
+│ 
+│   python_repl (success)
+│   Build SQL to check all typology IDs exist in Snowflake
+│ 
+│   python_repl (success)
+│   Generate SQL to verify all typology IDs exist
+│ 
+│   sql_execute (success)
+│   Verify all planted typology IDs exist in Snowflake
+│ All 6 typologies: 100% found. Now suspending the warehouse.
+│ 
+│   system_todo_write (success)
+│   {"todos":[{"content":"PUT 11 CSVs to stage (exclude ground_truth.csv)",…
+│ 
+│   sql_execute (success)
+│   Suspend PAPERTRAIL_WH
+│ Reload complete. Three summary tables:
+│ 
+│ **Row counts (all 11 match)**
+│ 
+│ | Table | CSV | Snowflake | Match |
+│ |---|---|---|---|
+│ | COUNTERPARTY | 809 | 809 | Y |
+│ | ACCOUNT | 1,497 | 1,497 | Y |
+│ | TRANSACTION | 240,798 | 240,798 | Y |
+│ | ALERT | 219 | 219 | Y |
+│ | ALERT_TRANSACTION | 3,083 | 3,083 | Y |
+│ | CASE_INVESTIGATION | 93 | 93 | Y |
+│ | CASE_ALERT | 97 | 97 | Y |
+│ | WATCHLIST_ENTRY | 82 | 82 | Y |
+│ | WATCHLIST_SCREENING_RESULT | 1,143 | 1,143 | Y |
+│ | REGULATORY_DOCUMENT | 6 | 6 | Y |
+│ | REGULATORY_DOCUMENT_CLAUSE | 18 | 18 | Y |
+│ 
+│ **Referential integrity (all 11 FKs clean)**
+│ 
+│ | FK | Orphans |
+│ |---|---|
+│ | ACCOUNT.counterparty_id → COUNTERPARTY | 0 |
+│ | TRANSACTION.account_id → ACCOUNT | 0 |
+│ | ALERT.counterparty_id → COUNTERPARTY | 0 |
+│ | ALERT_TRANSACTION.alert_id → ALERT | 0 |
+│ | ALERT_TRANSACTION.transaction_id → TRANSACTION | 0 |
+│ | CASE_INVESTIGATION.counterparty_id → COUNTERPARTY | 0 |
+│ | CASE_ALERT.case_id → CASE_INVESTIGATION | 0 |
+│ | CASE_ALERT.alert_id → ALERT | 0 |
+│ | WSR.counterparty_id → COUNTERPARTY | 0 |
+│ | WSR.watchlist_entry_id → WATCHLIST_ENTRY | 0 |
+│ | REG_CLAUSE.document_id → REG_DOCUMENT | 0 |
+│ 
+│ **Planted typologies (all 6 at 100%)**
+│ 
+│ | Typology | ID types checked | Found/Total |
+│ |---|---|---|
+│ | STRUCTURING | cp(4), acct(12), tx(56) | 72/72 |
+│ | ROUND_TRIPPING | cp(3), acct(3), tx(24) | 30/30 |
+│ | DORMANT_REACTIVATION | cp(2), acct(2), tx(30) | 34/34 |
+│ | VELOCITY_SPIKE | cp(3), acct(3), tx(207) | 213/213 |
+│ | MULE_NETWORK | cp(5), acct(5), tx(10), alert(5) | 25/25 |
+│ | SANCTIONS_NEAR_MATCH | cp(2), alert(2) | 4/4 |
+│ 
+│ ground_truth.csv confirmed absent from stage. PAPERTRAIL_WH suspended.
+│ 
+│   system_todo_write (success)
+│   {"todos":[{"content":"PUT 11 CSVs to stage (exclude ground_truth.csv)",…
+│ 
+│   bash (success)
+│   $ mkdir -p ~/claude-usage-log && cat >> ~/claude-usage-log/2026-10.md <…
+│ All done. The full RAW reload is complete and verified -- 11 tables loaded, zero errors, zero orphans, all 6 planted typologies intact, warehouse suspended.
+└──────────────────────────────────────────────────────────────────────────────┘

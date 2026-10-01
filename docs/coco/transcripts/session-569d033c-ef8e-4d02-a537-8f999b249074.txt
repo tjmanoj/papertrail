@@ -1,0 +1,106 @@
+┌─ USER [23:37] ───────────────────────────────────────────────────────────────┐
+│ Set up the PaperTrail project foundation. Do exactly these steps, then report results concisely.
+│ 
+│ 1. Report the current account, region, active role, and any existing warehouses.
+│ 
+│ 2. Create an XS warehouse named PAPERTRAIL_WH with AUTO_SUSPEND = 60,
+│    AUTO_RESUME = TRUE, INITIALLY_SUSPENDED = TRUE. Idempotent DDL.
+│ 
+│ 3. Create database PAPERTRAIL with schemas RAW, CURATED, GOLD, GOVERNANCE.
+│ 
+│ 4. IMPORTANT DIAGNOSTIC — determine whether Cortex AI inference works in this
+│    region. Try, in order, and report exactly which succeed and which fail with
+│    what error:
+│      SELECT AI_COMPLETE('claude-sonnet-5', 'Reply with the single word OK');
+│      SELECT SNOWFLAKE.CORTEX.COMPLETE('llama3.1-8b', 'Reply with OK');
+│    Then query SHOW PARAMETERS LIKE 'CORTEX_ENABLED_CROSS_REGION' IN ACCOUNT.
+│    Tell me which model names are actually usable in this region, and whether
+│    cross-region inference needs enabling.
+│ 
+│ 5. Write every DDL statement you ran into sql/00-foundation.sql, idempotent,
+│    with brief comments.
+│ 
+│ Do not create any other objects. Do not generate data yet.
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌─ AGENT ──────────────────────────────────────────────────────────────────────┐
+│ I'll set up the PaperTrail foundation. Let me start by gathering account info and running the DDL.
+│ 
+│   sql_execute (success)
+│   List existing warehouses
+│ 
+│   sql_execute (success)
+│   Get current account, region, role, warehouse
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌─ AGENT ──────────────────────────────────────────────────────────────────────┐
+│ Account info collected. Now creating the warehouse, database, and schemas, and testing Cortex AI.
+│ 
+│   sql_execute (success)
+│   Create PAPERTRAIL_WH warehouse (XS, auto-suspend 60s)
+│ 
+│   sql_execute (success)
+│   Create PAPERTRAIL database and schemas
+│ 
+│   sql_execute (success)
+│   Create GOLD schema
+│ 
+│   sql_execute (success)
+│   Create RAW schema
+│ 
+│   sql_execute (success)
+│   Create GOVERNANCE schema
+│ 
+│   sql_execute (success)
+│   Create CURATED schema
+│ Schemas created. Now running the Cortex AI diagnostics — switching to the PAPERTRAIL_WH warehouse first.
+│ 
+│   sql_execute (success)
+│   Use PAPERTRAIL_WH for Cortex tests
+│ 
+│   sql_execute (success)
+│   Check CORTEX_ENABLED_CROSS_REGION parameter
+│ 
+│   sql_execute (success)
+│   Test claude-sonnet-5 via AI_COMPLETE
+│ 
+│   sql_execute (success)
+│   Test llama3.1-8b via SNOWFLAKE.CORTEX.COMPLETE
+│ All Cortex calls succeeded. Now let me write the foundation SQL file and check existing project structure.
+│ 
+│   glob (success)
+│   sql/**
+│ 
+│   bash (success)
+│   $ mkdir -p "/Users/manoj/Documents/Tj/h2skill/snowflake coco/papertrail…
+│ 
+│   write (success)
+│   /Users/manoj/Documents/Tj/h2skill/snowflake coco/papertrail/sql/00-foun…
+│ Done. Here's the summary:
+│ 
+│ **1. Account details**
+│ 
+│ | Field | Value |
+│ |---|---|
+│ | Account | XD71507 |
+│ | Region | AWS_AP_SOUTHEAST_7 |
+│ | Role | ACCOUNTADMIN |
+│ | User | TJMANOJ |
+│ | Existing warehouses | COMPUTE_WH (XS), SNOWFLAKE_LEARNING_WH (XS), SYSTEM$STREAMLIT_NOTEBOOK_WH (XS) — all suspended |
+│ 
+│ **2. PAPERTRAIL_WH** — created (XS, auto-suspend 60s, initially suspended).
+│ 
+│ **3. Database & schemas** — `PAPERTRAIL.RAW`, `PAPERTRAIL.CURATED`, `PAPERTRAIL.GOLD`, `PAPERTRAIL.GOVERNANCE` all created.
+│ 
+│ **4. Cortex AI diagnostics**
+│ 
+│ | Test | Result |
+│ |---|---|
+│ | `AI_COMPLETE('claude-sonnet-5', ...)` | Succeeded — returned "OK" |
+│ | `SNOWFLAKE.CORTEX.COMPLETE('llama3.1-8b', ...)` | Succeeded — returned "OK" |
+│ | `CORTEX_ENABLED_CROSS_REGION` | Set to `ANY_REGION` (account level) |
+│ 
+│ Both models work. Cross-region inference is already enabled (`ANY_REGION`), so all Cortex LLM models are usable from this `AP_SOUTHEAST_7` region — no action needed.
+│ 
+│ **5. DDL written** to `sql/00-foundation.sql` — fully idempotent.
+└──────────────────────────────────────────────────────────────────────────────┘
