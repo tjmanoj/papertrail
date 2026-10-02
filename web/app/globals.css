@@ -158,3 +158,24 @@ td.r{text-align:right; font-family:var(--mono); font-variant-numeric:tabular-num
   font-variant-numeric:tabular-nums; letter-spacing:-.02em; color:var(--ink); line-height:1.15}
 .strip .l{display:block; font-family:var(--mono); font-size:9.5px; letter-spacing:.13em;
   text-transform:uppercase; color:var(--ink-3); margin-top:6px}
+
+/* reviewer signposting */
+.revpanel{border:1px solid var(--accent-dim); background:linear-gradient(180deg,
+  color-mix(in srgb, var(--accent) 7%, var(--panel)) 0%, var(--panel) 100%);
+  border-radius:8px; padding:16px 18px; margin-top:16px}
+.revhead{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:12px}
+.revsub{font-family:var(--mono); font-size:10px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-3)}
+.revsteps{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:10px}
+.revstep{display:flex; gap:11px; align-items:flex-start; text-align:left;
+  background:var(--bg-2); border:1px solid var(--line); border-radius:6px;
+  padding:12px 13px; font-family:var(--sans); color:inherit; width:100%}
+.revstep.clickable{cursor:pointer; transition:border-color .15s}
+.revstep.clickable:hover{border-color:var(--accent)}
+.revstep.clickable:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.revn{flex:none; width:21px; height:21px; border-radius:50%; background:var(--accent-dim);
+  color:#02121B; font-family:var(--mono); font-size:11px; font-weight:600;
+  display:grid; place-items:center; margin-top:1px}
+.revbody{display:flex; flex-direction:column; gap:3px; min-width:0}
+.revt{font-family:var(--cond); font-weight:600; font-size:14.5px; color:var(--ink)}
+.revd{font-size:12.8px; color:var(--ink-2); line-height:1.5}

@@ -145,6 +145,11 @@ function Ask() {
         Questions go to a Cortex Agent holding two tools: Cortex Analyst over a governed semantic view for
         figures, and Cortex Search over 72 regulatory clauses for rules. It answers live against Snowflake.
       </p>
+      <p className="lede" style={{ marginTop: -14 }}>
+        Every answer shows the SQL that produced it. To check the numbers rather than take them on trust,
+        <strong> Prove</strong> runs the same questions without the governed layer, and <strong>File</strong>
+        {' '}re-executes a stored figure against live data.
+      </p>
 
       <div className="panel">
         <div className="askbar">
@@ -641,6 +646,50 @@ function Evidence() {
 }
 
 /* ---------------------------------- Shell --------------------------------- */
+
+/* A short, signposted route through the app for someone reviewing it cold.
+   Judges do not know AML and will not know what to ask, and nothing on the
+   Ask tab previously told them the verification surfaces existed. */
+function ReviewerPanel({ go }) {
+  const steps = [
+    { n: '1', t: 'Ask it to forecast',
+      d: 'Click the dashed question below. It refuses, because it will not state a figure it cannot ground.',
+      action: null },
+    { n: '2', t: 'Re-run a stored number',
+      d: 'Open a footnote and press Re-run this SQL. The figure re-derives from its own stored query, live.',
+      action: 'file' },
+    { n: '3', t: 'See it without governance',
+      d: 'The same five questions answered by an ungoverned model. It is confidently wrong on two of them.',
+      action: 'prove' },
+  ];
+  return (
+    <div className="revpanel">
+      <div className="revhead">
+        <span className="eyebrow" style={{ margin: 0 }}>For reviewers</span>
+        <span className="revsub">three things, about two minutes</span>
+      </div>
+      <div className="revsteps">
+        {steps.map((s) => {
+          const Tag = s.action ? 'button' : 'div';
+          return (
+            <Tag
+              key={s.n}
+              className={`revstep${s.action ? ' clickable' : ''}`}
+              {...(s.action ? { onClick: () => go(s.action), type: 'button' } : {})}
+            >
+              <span className="revn">{s.n}</span>
+              <span className="revbody">
+                <span className="revt">{s.t}</span>
+                <span className="revd">{s.d}</span>
+              </span>
+            </Tag>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 const TABS = [
   ['ask', 'Ask', Ask],
   ['prove', 'Prove', Prove],
@@ -679,6 +728,8 @@ export default function Page() {
       </nav>
 
       <StatStrip />
+
+      {tab === 'ask' && <ReviewerPanel go={setTab} />}
 
       <main>
         <Active />
