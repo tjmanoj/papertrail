@@ -412,6 +412,17 @@ function FileView() {
   const text = String(finding.FINDING_TEXT || '');
   const parts = text.split(/(\[\d+\])/g);
 
+  // The finding is generated as markdown, so bold markers have to be rendered
+  // rather than printed. Footnote markers are split out first and kept clickable.
+  const renderProse = (chunk, key) =>
+    chunk.split(/(\*\*[^*]+\*\*)/g).map((piece, j) =>
+      /^\*\*[^*]+\*\*$/.test(piece) ? (
+        <strong key={`${key}-b${j}`} style={{ color: 'var(--ink)' }}>{piece.slice(2, -2)}</strong>
+      ) : (
+        <span key={`${key}-t${j}`}>{piece}</span>
+      ),
+    );
+
   return (
     <>
       <h2 className="page">File</h2>
@@ -430,7 +441,7 @@ function FileView() {
                 {p}
               </span>
             ) : (
-              <span key={i}>{p}</span>
+              <span key={i}>{renderProse(p, i)}</span>
             ),
           )}
         </div>
@@ -487,7 +498,7 @@ function FileView() {
                   <dd>{f.METRIC_DEFINITION}</dd>
                   <dt>Clause</dt>
                   <dd>
-                    <strong style={{ color: 'var(--ink)' }}>§{f.CLAUSE_NUMBER}</strong> - {f.CLAUSE_TEXT_EXCERPT}
+                    <strong style={{ color: 'var(--ink)' }}>{String(f.CLAUSE_NUMBER || '').replace(/^§+/, '§')}</strong> - {f.CLAUSE_TEXT_EXCERPT}
                   </dd>
                   <dt>Source</dt>
                   <dd>
