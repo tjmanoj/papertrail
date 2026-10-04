@@ -12,6 +12,7 @@ Problem statement 1 - *Risk, Fraud and Regulatory Intelligence Copilot*
 | | |
 |---|---|
 | **Live app** (no login required) | **https://papertrail-provenance.vercel.app** |
+| **Demo video** (3 min) | **https://youtu.be/ZTIbZ57MyVM** |
 | **Native app** (Streamlit in Snowflake) | `PAPERTRAIL.GOLD.PAPERTRAIL_APP` - open from Snowsight with a role in the account |
 
 Three things a judge can do without taking our word for anything:
