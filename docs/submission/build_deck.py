@@ -327,21 +327,24 @@ for i, (head, body) in enumerate(panels):
                          [(body, {"size": 10.5, "color": INK2})]], space=7)
 y += ph + 250000
 
-lh2 = min(760000, FLOOR - y)
+lh2 = min(820000, FLOOR - y)
 links = card(sl, MARGIN, y, BODY_W, lh2, fill=NAVY, border=None)
 APP = "https://papertrail-provenance.vercel.app"
 REPO = "https://github.com/tjmanoj/papertrail"
+VIDEO = "https://youtu.be/ZTIbZ57MyVM"
 write(links.text_frame,
       [[("Live app    ", {"color": MUTED, "size": 9.5}),
         ("papertrail-provenance.vercel.app",
          {"color": CYAN_B, "size": 12.5, "bold": True, "link": APP}),
         ("    opens for anyone, no login", {"color": MUTED, "size": 9.5})],
-       [("Repository    ", {"color": MUTED, "size": 9.5}),
+       [("Demo    ", {"color": MUTED, "size": 9.5}),
+        ("youtu.be/ZTIbZ57MyVM", {"color": WHITE, "size": 10.5, "link": VIDEO}),
+        ("        Repository    ", {"color": MUTED, "size": 9.5}),
         ("github.com/tjmanoj/papertrail",
-         {"color": WHITE, "size": 10.5, "link": REPO}),
-        ("        Also deployed natively as    ", {"color": MUTED, "size": 9.5}),
-        ("Streamlit in Snowflake", {"color": WHITE, "size": 10.5})]],
-      space=4, align=PP_ALIGN.CENTER)
+         {"color": WHITE, "size": 10.5, "link": REPO})],
+       [("Also deployed natively as Streamlit in Snowflake",
+         {"color": MUTED, "size": 9})]],
+      space=3, align=PP_ALIGN.CENTER)
 
 # --------------------------------------------------------------- final sweep
 for _sl in prs.slides:
